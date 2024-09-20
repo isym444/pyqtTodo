@@ -56,6 +56,8 @@ date_input.setDate(QtCore.QDate.currentDate())
 
 
 def add_todo():
+    if(todo_input.text() == ""):
+        return
     date = date_input.date()
     todo = todo_input.text()
     list_view.addItem(f"{date.toString()} - {todo}")
