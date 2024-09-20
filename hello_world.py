@@ -39,19 +39,20 @@ from PyQt6 import QtWidgets, uic, QtCore
 app = QtWidgets.QApplication(sys.argv)
 
 
-#lodding the ui file
+# lodding the ui file
 window = uic.loadUi("mainwindow.ui")
 
-#setting the ui elements
+# setting the ui elements
 date_input = window.dateEdit
 todo_input = window.lineEdit
 add_button = window.pushButton
 list_view = window.listWidget
 menu_bar = window.menuBar
 status_bar = window.statusBar
+remove_button = window.pushButton_2
 
 
-#setting the date to the current date
+# setting the date to the current date
 date_input.setDate(QtCore.QDate.currentDate())
 
 
@@ -62,8 +63,16 @@ def add_todo():
     date_input.setDate(QtCore.QDate.currentDate())
     todo_input.clear()
 
-#connecting the add button to the add_todo function
+
+def remove_todo():
+    current_row = list_view.currentRow()
+    if current_row != -1:
+        list_view.takeItem(current_row)
+
+
+# connecting the add button to the add_todo function
 add_button.clicked.connect(add_todo)
+remove_button.clicked.connect(remove_todo)
 
 window.show()
 app.exec()
