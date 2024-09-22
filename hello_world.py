@@ -35,8 +35,14 @@
 
 import sys
 from PyQt6 import QtWidgets, uic, QtCore
+import sqlite3
 
 app = QtWidgets.QApplication(sys.argv)
+
+# creating a connection to the database
+conn = sqlite3.connect("todo.db")
+cursor = conn.cursor()
+cursor.execute("CREATE TABLE IF NOT EXISTS todos (date DATE, todo TEXT)")
 
 
 # lodding the ui file
@@ -55,13 +61,20 @@ remove_button = window.pushButton_2
 # setting the date to the current date
 date_input.setDate(QtCore.QDate.currentDate())
 
+# adding the todos from the database to the list view
+cursor.execute("SELECT * FROM todos")
+rows = cursor.fetchall()
+for row in rows:
+    list_view.addItem(f"{row[0]} - {row[1]}")
 
 def add_todo():
-    if(todo_input.text() == ""):
+    if todo_input.text() == "":
         return
     date = date_input.date()
     todo = todo_input.text()
     list_view.addItem(f"{date.toString()} - {todo}")
+    cursor.execute("INSERT INTO todos VALUES (?, ?)", (date.toString(), todo))
+    conn.commit()   
     date_input.setDate(QtCore.QDate.currentDate())
     todo_input.clear()
 
@@ -69,7 +82,10 @@ def add_todo():
 def remove_todo():
     current_row = list_view.currentRow()
     if current_row != -1:
+        cursor.execute("DELETE FROM todos WHERE date = ? AND todo = ?", (rows[current_row]))
+        conn.commit()
         list_view.takeItem(current_row)
+
 
 
 # connecting the add button to the add_todo function
@@ -78,3 +94,6 @@ remove_button.clicked.connect(remove_todo)
 
 window.show()
 app.exec()
+
+# closing the connection to the database
+conn.close()
