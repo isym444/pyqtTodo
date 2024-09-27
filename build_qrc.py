@@ -1,8 +1,8 @@
 import os
 import sys
 
-qrc_file_path = "/Users/iseyuki/pyqtTodo/resources.qrc"
-icons_folder = "/Users/iseyuki/pyqtTodo/icons"
+qrc_file_path = "./resources.qrc"
+icons_folder = "./icons"
 
 icons = [
     os.path.join(icons_folder, f)
