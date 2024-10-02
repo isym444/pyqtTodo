@@ -37,6 +37,7 @@ import sys
 from PyQt6 import QtWidgets, uic, QtCore
 import sqlite3
 from PyQt6.QtCore import QResource
+import resources_rc
 
 # images contained in the resources.qrc file
 QResource.registerResource("resources.qrc")
