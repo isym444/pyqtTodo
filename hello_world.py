@@ -95,6 +95,7 @@ def add_todo():
 
 def remove_todo():
     current_row = list_view.currentRow()
+    global rows
     if current_row != -1 and current_row < len(rows):
         cursor.execute("DELETE FROM todos WHERE date = ? AND todo = ? AND description = ?", (rows[current_row]))
         conn.commit()
