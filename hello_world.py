@@ -39,10 +39,12 @@ import sqlite3
 from PyQt6.QtCore import QResource
 import resources_rc
 
+app = QtWidgets.QApplication(sys.argv)
+
 # images contained in the resources.qrc file
 QResource.registerResource("resources.qrc")
 
-app = QtWidgets.QApplication(sys.argv)
+# app = QtWidgets.QApplication(sys.argv)
 
 # creating a connection to the database
 conn = sqlite3.connect("todo.db")
@@ -74,6 +76,15 @@ rows = cursor.fetchall()
 
 for row in rows:
     list_view.addItem(f"{row[0]} - {row[1]}")
+
+# This allows passing a connection from outside (e.g., for testing)
+def init_db(conn=None):
+    if conn is None:
+        # Create a connection to the actual database if none is passed
+        conn = sqlite3.connect("todo.db")
+    cursor = conn.cursor()
+    cursor.execute("CREATE TABLE IF NOT EXISTS todos (date DATE, todo TEXT, description TEXT)")
+    return conn, cursor
 
 def add_todo():
     if todo_input.text() == "":
@@ -125,8 +136,13 @@ remove_button.clicked.connect(remove_todo)
 list_view.itemDoubleClicked.connect(show_details)
 
 
-window.show()
-app.exec()
+# window.show()
+# app.exec()
 
 # closing the connection to the database
-conn.close()
+# conn.close()
+
+if __name__ == "__main__":
+    window.show()
+    app.exec()
+    conn.close()
