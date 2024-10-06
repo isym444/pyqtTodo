@@ -37,6 +37,8 @@ import sys
 from PyQt6 import QtWidgets, uic, QtCore
 import sqlite3
 from PyQt6.QtCore import QResource
+# for logos to appear, must run python3 build_qrc.py to update resources.qrc file so they appear in qt cerator
+# enter the following command to generate python file from qrc file so logos appear when run: pyrcc6 -o x.py x.qrc
 import resources_rc
 
 # images contained in the resources.qrc file
@@ -50,7 +52,7 @@ cursor = conn.cursor()
 cursor.execute("CREATE TABLE IF NOT EXISTS todos (date DATE, todo TEXT)")
 
 
-# lodding the ui file
+# loading the ui file
 window = uic.loadUi("mainwindow.ui")
 
 # setting the ui elements
