@@ -71,6 +71,7 @@ date_input.setDate(QtCore.QDate.currentDate())
 # adding the todos from the database to the list view
 cursor.execute("SELECT * FROM todos")
 rows = cursor.fetchall()
+
 for row in rows:
     list_view.addItem(f"{row[0]} - {row[1]}")
 
@@ -86,14 +87,22 @@ def add_todo():
     date_input.setDate(QtCore.QDate.currentDate())
     todo_input.clear()
     description_input.clear()
+    cursor.execute("SELECT * FROM todos")
+    global rows
+    rows = cursor.fetchall()
+    print(rows)
 
 
 def remove_todo():
     current_row = list_view.currentRow()
-    if current_row != -1:
+    if current_row != -1 and current_row < len(rows):
         cursor.execute("DELETE FROM todos WHERE date = ? AND todo = ? AND description = ?", (rows[current_row]))
         conn.commit()
         list_view.takeItem(current_row)
+        cursor.execute("SELECT * FROM todos")
+        rows = cursor.fetchall()
+        print(rows)
+
 
 def show_details():
     current_row = list_view.currentRow()
