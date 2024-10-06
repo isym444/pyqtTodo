@@ -17,14 +17,30 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>12</x>
-      <y>12</y>
+      <x>20</x>
+      <y>20</y>
       <width>67</width>
       <height>16</height>
      </rect>
     </property>
     <property name="text">
-     <string>Add task</string>
+     <string>Add Task</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="logoLabel">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>0</y>
+      <width>41</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="pixmap">
+     <pixmap resource="resources.qrc">:/icons/Cute-character.png</pixmap>
+    </property>
+    <property name="scaledContents">
+     <bool>true</bool>
     </property>
    </widget>
    <widget class="QWidget" name="layoutWidget">
@@ -42,6 +58,10 @@
        <property name="text">
         <string>Add</string>
        </property>
+       <property name="icon">
+        <iconset resource="resources.qrc">
+         <normaloff>:/icons/Add-task.png</normaloff>:/icons/Add-task.png</iconset>
+       </property>
       </widget>
      </item>
      <item>
@@ -51,6 +71,10 @@
       <widget class="QPushButton" name="pushButton_2">
        <property name="text">
         <string>Remove selected</string>
+       </property>
+       <property name="icon">
+        <iconset resource="resources.qrc">
+         <normaloff>:/icons/Delete-task.png</normaloff>:/icons/Delete-task.png</iconset>
        </property>
       </widget>
      </item>
@@ -81,12 +105,20 @@
      <x>0</x>
      <y>0</y>
      <width>529</width>
-     <height>37</height>
+     <height>24</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuTodo_List">
+    <property name="title">
+     <string>Todo List</string>
+    </property>
+   </widget>
+   <addaction name="menuTodo_List"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>
