@@ -47,15 +47,17 @@ app = QtWidgets.QApplication(sys.argv)
 # creating a connection to the database
 conn = sqlite3.connect("todo.db")
 cursor = conn.cursor()
-cursor.execute("CREATE TABLE IF NOT EXISTS todos (date DATE, todo TEXT)")
+cursor.execute("CREATE TABLE IF NOT EXISTS todos (date DATE, todo TEXT, description TEXT)")
 
 
 # lodding the ui file
 window = uic.loadUi("mainwindow.ui")
+another_window = uic.loadUi("anotherwindow.ui")
 
 # setting the ui elements
 date_input = window.dateEdit
 todo_input = window.lineEdit
+description_input = window.plainTextEdit
 add_button = window.pushButton
 list_view = window.listWidget
 menu_bar = window.menuBar
@@ -78,11 +80,13 @@ def add_todo():
         return
     date = date_input.date()
     todo = todo_input.text()
+    description = description_input.toPlainText()
     list_view.addItem(f"{date.toString()} - {todo}")
-    cursor.execute("INSERT INTO todos VALUES (?, ?)", (date.toString(), todo))
+    cursor.execute("INSERT INTO todos VALUES (?, ?, ?)", (date.toString(), todo, description))
     conn.commit()   
     date_input.setDate(QtCore.QDate.currentDate())
     todo_input.clear()
+    description_input.clear()
     cursor.execute("SELECT * FROM todos")
     global rows
     rows = cursor.fetchall()
@@ -91,9 +95,8 @@ def add_todo():
 
 def remove_todo():
     current_row = list_view.currentRow()
-    global rows
     if current_row != -1 and current_row < len(rows):
-        cursor.execute("DELETE FROM todos WHERE date = ? AND todo = ?", (rows[current_row]))
+        cursor.execute("DELETE FROM todos WHERE date = ? AND todo = ? AND description = ?", (rows[current_row]))
         conn.commit()
         list_view.takeItem(current_row)
         cursor.execute("SELECT * FROM todos")
@@ -101,11 +104,25 @@ def remove_todo():
         print(rows)
 
 
-
+def show_details():
+    current_row = list_view.currentRow()
+    if current_row != -1:
+        item_text = list_view.item(current_row).text()
+        date, todo = item_text.split(" - ", 1)
+        cursor.execute("SELECT description FROM todos WHERE date = ? AND todo = ?", (date, todo))
+        row = cursor.fetchone()
+        if row:
+            # assuming label_4, label_5, label_6 exist in another_window.ui
+            another_window.findChild(QtWidgets.QLabel, 'label_4').setText(todo)
+            another_window.findChild(QtWidgets.QLabel, 'label_5').setText(date)
+            another_window.findChild(QtWidgets.QLabel, 'label_6').setText(row[0])
+            another_window.show()
 
 # connecting the add button to the add_todo function
 add_button.clicked.connect(add_todo)
 remove_button.clicked.connect(remove_todo)
+list_view.itemDoubleClicked.connect(show_details)
+
 
 window.show()
 app.exec()
