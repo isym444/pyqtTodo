@@ -28,7 +28,7 @@ jobs:
     - name: Install system dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y libgl1-mesa-dev libxkbcommon-x11-0 libegl1-mesa
+        sudo apt-get install -y libgl1-mesa-dev libxkbcommon-x11-0 libegl1-mesa libxcb-xinerama0 libxcb-xinput0
         sudo apt-get install -y xvfb  # Xvfb for headless display
 
     # Step 4: Install Python dependencies
