@@ -28,8 +28,14 @@ jobs:
     - name: Install system dependencies
       run: |
         pip install -r requirements.txt
+        sudo apt install -y xvfb x11-utils libxkbcommon-x11-0
+        python -m pip install --upgrade pip
+        pip install pyside2 pytest coverage pytest-qt
   
     # Step 5: Run tests with Xvfb (for headless PyQt)
     - name: Run Unit Tests
+      env:
+        QT_DEBUG_PLUGINS: 1
       run: |
-        pytest
+        ulimit -c unlimited
+        sudo catchsegv xvfb-run --auto-servernum `which coverage` run -m pytest
