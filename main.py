@@ -37,14 +37,14 @@ import sys
 from PyQt6 import QtWidgets, uic, QtCore
 import sqlite3
 from PyQt6.QtCore import QResource
-# for logos to appear, must run python3 build_qrc.py to update resources.qrc file so they appear in qt cerator
-# enter the following command to generate python file from qrc file so logos appear when run: pyrcc6 -o x.py x.qrc
 import resources_rc
+
+app = QtWidgets.QApplication(sys.argv)
 
 # images contained in the resources.qrc file
 QResource.registerResource("resources.qrc")
 
-app = QtWidgets.QApplication(sys.argv)
+# app = QtWidgets.QApplication(sys.argv)
 
 # creating a connection to the database
 conn = sqlite3.connect("todo.db")
@@ -52,7 +52,7 @@ cursor = conn.cursor()
 cursor.execute("CREATE TABLE IF NOT EXISTS todos (date DATE, todo TEXT, description TEXT)")
 
 
-# loading the ui file
+# lodding the ui file
 window = uic.loadUi("mainwindow.ui")
 another_window = uic.loadUi("anotherwindow.ui")
 
@@ -77,6 +77,15 @@ rows = cursor.fetchall()
 for row in rows:
     list_view.addItem(f"{row[0]} - {row[1]}")
 
+# This allows passing a connection from outside (e.g., for testing)
+def init_db(conn=None):
+    if conn is None:
+        # Create a connection to the actual database if none is passed
+        conn = sqlite3.connect("todo.db")
+    cursor = conn.cursor()
+    cursor.execute("CREATE TABLE IF NOT EXISTS todos (date DATE, todo TEXT, description TEXT)")
+    return conn, cursor
+
 def add_todo():
     if todo_input.text() == "":
         return
@@ -97,6 +106,7 @@ def add_todo():
 
 def remove_todo():
     current_row = list_view.currentRow()
+    global rows
     if current_row != -1 and current_row < len(rows):
         cursor.execute("DELETE FROM todos WHERE date = ? AND todo = ? AND description = ?", (rows[current_row]))
         conn.commit()
@@ -126,8 +136,13 @@ remove_button.clicked.connect(remove_todo)
 list_view.itemDoubleClicked.connect(show_details)
 
 
-window.show()
-app.exec()
+# window.show()
+# app.exec()
 
 # closing the connection to the database
-conn.close()
+# conn.close()
+
+if __name__ == "__main__":
+    window.show()
+    app.exec()
+    conn.close()
