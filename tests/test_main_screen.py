@@ -1,15 +1,12 @@
-# N.B. run with: python -m unittest tests.main_screen_tests
 import unittest
-import pytest
 from unittest.mock import patch
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtTest import QTest
 from PyQt6.QtCore import Qt
-import os
-import sqlite3
 import sys
+import sqlite3
 
-# Import app
+# Import your main application (adjust the path if needed)
 import main
 
 
@@ -17,7 +14,7 @@ class TestTodoApp(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # Initialize the QApplication
+        # Initialize the QApplication instance
         cls.app = QApplication(sys.argv)
 
     def setUp(self):
@@ -26,21 +23,20 @@ class TestTodoApp(unittest.TestCase):
         self.cursor = self.conn.cursor()
         self.cursor.execute("CREATE TABLE todos (date DATE, todo TEXT, description TEXT)")
 
-        # Patch the database connection in main to use the in-memory DB
-        patcher = patch('main.init_db', return_value=(self.conn, self.cursor))
+        # Patch the database connection in the TodoApp class to use the in-memory database
+        patcher = patch('main.TodoApp.init_db', return_value=(self.conn, self.cursor))
         self.addCleanup(patcher.stop)
         patcher.start()
 
-        # Re-initialize the window after patching the DB
-        main.conn, main.cursor = main.init_db(self.conn)  # Ensure window uses in-memory DB
-        main.window.listWidget.clear()  # Clear the list widget to start fresh
-        main.cursor.execute("SELECT * FROM todos")  # Reload data from the in-memory DB
+        # Initialize the main window after patching the DB
+        self.todo_app = main.TodoApp()
+        # self.todo_app.show()
 
     def test_add_todo(self):
-        # Access the UI elements directly from the global window object
-        todo_input = main.window.lineEdit
-        add_button = main.window.pushButton
-        list_view = main.window.listWidget
+        # Access the UI elements from the instance of TodoApp
+        todo_input = self.todo_app.lineEdit
+        add_button = self.todo_app.pushButton
+        list_view = self.todo_app.listWidget
 
         # Simulate typing a todo item
         todo_input.setText("Test Todo Item")
@@ -57,13 +53,13 @@ class TestTodoApp(unittest.TestCase):
         rows = self.cursor.fetchall()
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0][1], "Test Todo Item")
-    
+
     def test_remove_todo(self):
-        # Access the UI elements directly from the global window object
-        todo_input = main.window.lineEdit
-        add_button = main.window.pushButton
-        list_view = main.window.listWidget
-        remove_button = main.window.pushButton_2
+        # Access the UI elements from the instance of TodoApp
+        todo_input = self.todo_app.lineEdit
+        add_button = self.todo_app.pushButton
+        list_view = self.todo_app.listWidget
+        remove_button = self.todo_app.pushButton_2
 
         # Add a todo item
         todo_input.setText("Test Todo Item")
@@ -90,6 +86,6 @@ class TestTodoApp(unittest.TestCase):
     def tearDownClass(cls):
         cls.app.quit()
 
+
 if __name__ == "__main__":
     unittest.main()
-
