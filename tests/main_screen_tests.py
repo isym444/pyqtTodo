@@ -9,7 +9,7 @@ import sqlite3
 import sys
 
 # Import app
-import hello_world
+import main
 
 
 class TestTodoApp(unittest.TestCase):
@@ -25,21 +25,21 @@ class TestTodoApp(unittest.TestCase):
         self.cursor = self.conn.cursor()
         self.cursor.execute("CREATE TABLE todos (date DATE, todo TEXT, description TEXT)")
 
-        # Patch the database connection in hello_world to use the in-memory DB
-        patcher = patch('hello_world.init_db', return_value=(self.conn, self.cursor))
+        # Patch the database connection in main to use the in-memory DB
+        patcher = patch('main.init_db', return_value=(self.conn, self.cursor))
         self.addCleanup(patcher.stop)
         patcher.start()
 
         # Re-initialize the window after patching the DB
-        hello_world.conn, hello_world.cursor = hello_world.init_db(self.conn)  # Ensure window uses in-memory DB
-        hello_world.window.listWidget.clear()  # Clear the list widget to start fresh
-        hello_world.cursor.execute("SELECT * FROM todos")  # Reload data from the in-memory DB
+        main.conn, main.cursor = main.init_db(self.conn)  # Ensure window uses in-memory DB
+        main.window.listWidget.clear()  # Clear the list widget to start fresh
+        main.cursor.execute("SELECT * FROM todos")  # Reload data from the in-memory DB
 
     def test_add_todo(self):
         # Access the UI elements directly from the global window object
-        todo_input = hello_world.window.lineEdit
-        add_button = hello_world.window.pushButton
-        list_view = hello_world.window.listWidget
+        todo_input = main.window.lineEdit
+        add_button = main.window.pushButton
+        list_view = main.window.listWidget
 
         # Simulate typing a todo item
         todo_input.setText("Test Todo Item")
@@ -63,3 +63,4 @@ class TestTodoApp(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
