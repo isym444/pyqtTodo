@@ -28,15 +28,14 @@ jobs:
     - name: Install system dependencies
       run: |
         sudo apt update
-        sudo apt install -y xvfb x11-utils libxkbcommon-x11-0 libc-bin libgl1-mesa-glx libegl1-mesa  # Add OpenGL and EGL libraries
+        sudo apt install -y xvfb x11-utils libxkbcommon-x11-0 libc-bin libgl1-mesa-glx libegl1-mesa mesa-utils
         pip install -r requirements.txt
         python -m pip install --upgrade pip
         pip install pyside2 pytest coverage pytest-qt
-  
+    
     # Step 5: Run tests with Xvfb (for headless PyQt)
     - name: Run Unit Tests
       env:
         QT_DEBUG_PLUGINS: 1
       run: |
-        ulimit -c unlimited
-        xvfb-run --auto-servernum `which coverage` run -m pytest
+        xvfb-run --auto-servernum pytest
