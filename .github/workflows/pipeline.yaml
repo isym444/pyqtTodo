@@ -27,8 +27,9 @@ jobs:
     # Step 3: Install system dependencies for PyQt (OpenGL and Xvfb for headless mode)
     - name: Install system dependencies
       run: |
+        sudo apt update
+        sudo apt install -y xvfb x11-utils libxkbcommon-x11-0 libc-bin  # Install libc-bin for catchsegv
         pip install -r requirements.txt
-        sudo apt install -y xvfb x11-utils libxkbcommon-x11-0
         python -m pip install --upgrade pip
         pip install pyside2 pytest coverage pytest-qt
   
