@@ -1,5 +1,6 @@
 # N.B. run with: python -m unittest tests.main_screen_tests
 import unittest
+import pytest
 from unittest.mock import patch
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtTest import QTest

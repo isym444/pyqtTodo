@@ -9,7 +9,7 @@ on:
       - '**'  # This triggers the pipeline on any pull request
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
 
 
@@ -27,12 +27,9 @@ jobs:
     # Step 3: Install system dependencies for PyQt (OpenGL and Xvfb for headless mode)
     - name: Install system dependencies
       run: |
-        sudo apt install -y xvfb x11-utils libxkbcommon-x11-0
-        python -m pip install --upgrade pip
-        pip install pyside2 pytest coverage pytest-qt
-
+        pip install -r requirements.txt
+  
     # Step 5: Run tests with Xvfb (for headless PyQt)
     - name: Run Unit Tests
       run: |
-        ulimit -c unlimited
-        sudo catchsegv xvfb-run --auto-servernum `which coverage` run -m unittest tests.main_screen_tests
+        pytest
