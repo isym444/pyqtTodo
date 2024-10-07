@@ -3,7 +3,7 @@ from PyQt6 import QtWidgets, uic, QtCore
 import sqlite3
 from PyQt6.QtCore import QResource
 import resources_rc
-
+from details_window import DetailsWindow
 
 class TodoApp(QtWidgets.QMainWindow):
     def __init__(self):
@@ -83,17 +83,6 @@ class TodoApp(QtWidgets.QMainWindow):
         self.conn.close()
         event.accept()
 
-
-class DetailsWindow(QtWidgets.QMainWindow):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        uic.loadUi("anotherwindow.ui", self)
-        
-    def show_details(self, todo, date, description):
-        self.findChild(QtWidgets.QLabel, 'label_4').setText(todo)
-        self.findChild(QtWidgets.QLabel, 'label_5').setText(date)
-        self.findChild(QtWidgets.QLabel, 'label_6').setText(description)
-        self.show()
 
 
 if __name__ == "__main__":
