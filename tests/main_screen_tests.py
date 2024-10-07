@@ -56,6 +56,34 @@ class TestTodoApp(unittest.TestCase):
         rows = self.cursor.fetchall()
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0][1], "Test Todo Item")
+    
+    def test_remove_todo(self):
+        # Access the UI elements directly from the global window object
+        todo_input = main.window.lineEdit
+        add_button = main.window.pushButton
+        list_view = main.window.listWidget
+        remove_button = main.window.pushButton_2
+
+        # Add a todo item
+        todo_input.setText("Test Todo Item")
+        QTest.mouseClick(add_button, Qt.MouseButton.LeftButton)
+
+        # Verify that the item was added to the list
+        self.assertEqual(list_view.count(), 1)
+
+        # Select the item in the list
+        list_view.setCurrentRow(0)
+
+        # Simulate clicking the remove button
+        QTest.mouseClick(remove_button, Qt.MouseButton.LeftButton)
+
+        # Verify that the item was removed from the list
+        self.assertEqual(list_view.count(), 0)
+
+        # Verify that the item was removed from the in-memory database
+        self.cursor.execute("SELECT * FROM todos")
+        rows = self.cursor.fetchall()
+        self.assertEqual(len(rows), 0)
 
     @classmethod
     def tearDownClass(cls):
