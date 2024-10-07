@@ -1,0 +1,45 @@
+name: Python CI Pipeline
+
+on:
+  push:
+    branches:
+      - '**'  # This triggers the pipeline on a push to any branch
+  pull_request:
+    branches:
+      - '**'  # This triggers the pipeline on any pull request
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    env:
+        DISPLAY: ':99.0'
+
+
+    steps:
+    # Step 1: Check out the repository code
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    # Step 2: Set up Python environment
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - uses: tlambert03/setup-qt-libs@v1
+    - name: build "display"
+      run: |
+        /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX
+
+    # Step 3: Install system dependencies for PyQt (OpenGL and Xvfb for headless mode)
+    - name: Install system dependencies
+      run: |
+        pip install -r requirements.txt
+        sudo apt install -y xvfb x11-utils libxkbcommon-x11-0
+        python -m pip install --upgrade pip
+        pip install pyside2 pytest coverage pytest-qt
+  
+    # Step 5: Run tests with Xvfb (for headless PyQt)
+    - name: Run Unit Tests
+      run: |
+        pytest
