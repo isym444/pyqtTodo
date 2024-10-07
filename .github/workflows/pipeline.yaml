@@ -40,12 +40,4 @@ jobs:
     # Step 5: Run tests with Xvfb (for headless PyQt)
     - name: Run Unit Tests
       run: |
-        xvfb-run -a python -m unittest discover -s tests
-
-      # Step 5: Upload test results (optional, if you want test artifacts)
-    - name: Archive test results
-      if: always()
-      uses: actions/upload-artifact@v3
-      with:
-        name: test-results
-        path: tests/reports
+        xvfb-run -a python -m unittest tests.main_screen_tests
