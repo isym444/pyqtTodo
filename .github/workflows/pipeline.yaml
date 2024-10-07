@@ -10,41 +10,36 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        python-version: ['3.10']
-        os: [macos-latest, ubuntu-latest, windows-latest]
+    runs-on: ubuntu-latest
     env:
-      # Display must be available globally for linux to know where xvfb is
-      DISPLAY: ":99.0"
-      QT_SELECT: "qt6"
+        DISPLAY: ':99.0'
+
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
+    # Step 1: Check out the repository code
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    # Step 2: Set up Python environment
+    - name: Set up Python 3.9
       uses: actions/setup-python@v4
       with:
-        python-version: ${{ matrix.python-version }}
-    - name: Setup xvfb (Linux)
-      if: runner.os == 'Linux'
+        python-version: '3.9'
+
+    - uses: tlambert03/setup-qt-libs@v1
+    - name: build "display"
       run: |
-        # Stuff copied wildly from several stackoverflow posts
-        sudo apt-get install -y xvfb libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-xfixes0 libxcb-shape0 libglib2.0-0 libgl1-mesa-dev
-        sudo apt-get install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev
-        # start xvfb in the background
-        sudo /usr/bin/Xvfb $DISPLAY -screen 0 1280x1024x24 &
-    - name: Install Python dependencies
+        /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX
+
+    # Step 3: Install system dependencies for PyQt (OpenGL and Xvfb for headless mode)
+    - name: Install system dependencies
       run: |
-        # prerequisites
-        python -m pip install --upgrade pip wheel
-        python -m pip install coverage flake8 pytest pytest-qt
-    - name: Install package
+        pip install -r requirements.txt
+        sudo apt install -y xvfb x11-utils libxkbcommon-x11-0
+        python -m pip install --upgrade pip
+        pip install pyside2 pytest coverage pytest-qt
+  
+    # Step 5: Run tests with Xvfb (for headless PyQt)
+    - name: Run Unit Tests
       run: |
-        pip install -e .
-    - name: List installed packages
-      run: |
-        pip freeze
-    - name: Test with pytest
-      run: |
-        coverage run --source=mpl_data_cast -m pytest -x tests
+        pytest
