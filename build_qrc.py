@@ -1,5 +1,4 @@
-import os
-import sys
+import sys, os
 
 qrc_file_path = "./resources.qrc"
 icons_folder = "./icons"

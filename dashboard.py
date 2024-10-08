@@ -1,12 +1,26 @@
-import sys
+import sys,os
 from PyQt6 import QtWidgets, uic, QtCore
 import sqlite3
 from details_window import DetailsWindow
+from ui_files.mainwindow_ui import Ui_MainWindow
 
-class Dashboard(QtWidgets.QMainWindow):
+basedir = os.path.dirname(__file__)
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    if hasattr(sys, '_MEIPASS'):
+        # PyInstaller sets this attribute and extracts files into _MEIPASS
+        base_path = sys._MEIPASS
+    else:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+class Dashboard(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
-        uic.loadUi("mainwindow.ui", self)
+        # uic.loadUi(resource_path(os.path.join('ui_files', 'mainwindow.ui')), self)
+        self.setupUi(self)
         self.conn, self.cursor = self.init_db()
         
         self.date_input = self.dateEdit
