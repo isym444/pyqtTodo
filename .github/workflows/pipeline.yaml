@@ -83,6 +83,7 @@ jobs:
     # Step 6: Generate a unique tag name
     - name: Generate Tag Name
       id: generate_tag
+      shell: bash
       run: echo "TAG=v0.0.$GITHUB_RUN_NUMBER" >> $GITHUB_OUTPUT
 
     # Step 7: Create and push the tag
