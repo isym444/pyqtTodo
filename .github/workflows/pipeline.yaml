@@ -46,6 +46,7 @@ jobs:
 
   generate-exe:
     runs-on: ubuntu-latest
+    needs: build-and-test  # This ensures that generate-exe depends on build-and-test
     env:
       DISPLAY: ':99.0'
 
