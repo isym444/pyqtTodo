@@ -6,11 +6,9 @@ from PyQt6.QtCore import Qt
 import sys
 import sqlite3
 
-# Import your main application (adjust the path if needed)
-import main
+from dashboard import Dashboard
 
-
-class TestTodoApp(unittest.TestCase):
+class TestDashboard(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -24,12 +22,12 @@ class TestTodoApp(unittest.TestCase):
         self.cursor.execute("CREATE TABLE todos (date DATE, todo TEXT, description TEXT)")
 
         # Patch the database connection in the TodoApp class to use the in-memory database
-        patcher = patch('main.TodoApp.init_db', return_value=(self.conn, self.cursor))
+        patcher = patch('dashboard.Dashboard.init_db', return_value=(self.conn, self.cursor))
         self.addCleanup(patcher.stop)
         patcher.start()
 
         # Initialize the main window after patching the DB
-        self.todo_app = main.TodoApp()
+        self.todo_app = Dashboard()
         # self.todo_app.show()
 
     def test_add_todo(self):
