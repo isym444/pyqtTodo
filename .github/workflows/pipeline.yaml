@@ -83,18 +83,16 @@ jobs:
     # Step 6: Generate a unique tag name
     - name: Generate Tag Name
       id: generate_tag
-      run: echo "TAG=v0.0.${{ github.run_number }}" >> $GITHUB_ENV
+      run: echo "TAG=v0.0.$GITHUB_RUN_NUMBER" >> $GITHUB_OUTPUT
 
     # Step 7: Create and push the tag
     - name: Create and Push Tag
-      env:
-        TAG: ${{ env.TAG }}
       run: |
         git config user.name "${{ github.actor }}"
         git config user.email "${{ github.actor }}@users.noreply.github.com"
-        git tag $TAG -a -m "Release $TAG"
-        git push origin $TAG
-
+        git tag ${{ steps.generate_tag.outputs.TAG }} -a -m "Release ${{ steps.generate_tag.outputs.TAG }}"
+        git push origin ${{ steps.generate_tag.outputs.TAG }}
+  
     # Step 8: Create GitHub Release
     - name: Create GitHub Release
       id: create_release
@@ -102,8 +100,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ env.TAG }}
-        release_name: Release ${{ env.TAG }}
+        tag_name: ${{ steps.generate_tag.outputs.TAG }}
+        release_name: Release ${{ steps.generate_tag.outputs.TAG }}
         body: |
           Changes in this Release
           - First Change
