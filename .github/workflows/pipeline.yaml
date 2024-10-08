@@ -78,7 +78,7 @@ jobs:
     # Add this step to create the zip file
     - name: Create Zip Archive
       run: |
-        zip -r my-artifact.zip ./dist/*
+        Compress-Archive -Path './dist/*' -DestinationPath 'my-artifact.zip'
 
     # Step 6: Generate a unique tag name
     - name: Generate Tag Name
