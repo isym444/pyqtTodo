@@ -47,8 +47,8 @@ jobs:
       run: |
         pytest
 
-  generate-exe:
-    runs-on: ubuntu-latest
+  generate-exe-and-publish-release:
+    runs-on: windows-latest
     needs: build-and-test  # This ensures that generate-exe depends on build-and-test
     env:
       DISPLAY: ':99.0'
@@ -66,6 +66,7 @@ jobs:
         pip install -r requirements.txt
         python -m pip install --upgrade pip
         pip install pyside2 pytest coverage pytest-qt
+        sudo apt-get install -y libxcb-render-util0 libxcb-keysyms1 libxcb-image0 libxcb-icccm4 libxcb-cursor0
 
     - name: PyInstaller Action
       uses: Martin005/pyinstaller-action@v1.2.0

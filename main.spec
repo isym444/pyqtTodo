@@ -4,7 +4,10 @@ import os
 import glob
 
 # Function to collect all files in ui_files directory
+from PyInstaller.utils.hooks import collect_submodules, collect_data_files
 
+hiddenimports = collect_submodules('PyQt6')
+datas = collect_data_files('PyQt6', subdir='Qt6')
 
 a = Analysis(
     ['main.py'],
