@@ -62,11 +62,9 @@ jobs:
     # Step 2: Install system dependencies and requirements
     - name: Install dependencies
       run: |
-        sudo apt install -y xvfb x11-utils libxkbcommon-x11-0
         pip install -r requirements.txt
         python -m pip install --upgrade pip
         pip install pyside2 pytest coverage pytest-qt
-        sudo apt-get install -y libxcb-render-util0 libxcb-keysyms1 libxcb-image0 libxcb-icccm4 libxcb-cursor0
 
     - name: PyInstaller Action
       uses: Martin005/pyinstaller-action@v1.2.0
