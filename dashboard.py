@@ -7,13 +7,13 @@ from ui_files.mainwindow_ui import Ui_MainWindow
 basedir = os.path.dirname(__file__)
 
 def resource_path(relative_path):
-    """ Get absolute path to resource, works for dev and for PyInstaller """
-    if hasattr(sys, '_MEIPASS'):
-        # PyInstaller sets this attribute and extracts files into _MEIPASS
-        base_path = sys._MEIPASS
+    """Get absolute path to resource, works for dev and for PyInstaller."""
+    if getattr(sys, 'frozen', False):
+        # Running in a bundle
+        base_path = os.path.dirname(sys.executable)
     else:
-        base_path = os.path.abspath(".")
-
+        # Running in a normal Python environment
+        base_path = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(base_path, relative_path)
 
 class Dashboard(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -40,7 +40,13 @@ class Dashboard(QtWidgets.QMainWindow, Ui_MainWindow):
         self.details_window = DetailsWindow(self)
         
     def init_db(self):
-        conn = sqlite3.connect("todo.db")
+        db_path = resource_path('todo.db')
+        if not os.path.exists(db_path):
+            print("Database does not exist. It will be created.")
+        else:
+            print("Database found.")
+
+        conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         cursor.execute("CREATE TABLE IF NOT EXISTS todos (date DATE, todo TEXT, description TEXT)")
         return conn, cursor
