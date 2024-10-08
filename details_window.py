@@ -1,7 +1,6 @@
 from PyQt6 import QtWidgets, uic
 import sys,os
 from ui_files.anotherwindow_ui import Ui_MainWindow
-import appdirs
 from utils import resource_path
 
 

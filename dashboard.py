@@ -3,7 +3,6 @@ from PyQt6 import QtWidgets, uic, QtCore
 import sqlite3
 from details_window import DetailsWindow
 from ui_files.mainwindow_ui import Ui_MainWindow
-import appdirs
 from utils import resource_path
 
 
