@@ -43,3 +43,47 @@ jobs:
     - name: Run Unit Tests
       run: |
         pytest
+
+  generate-exe:
+    runs-on: ubuntu-latest
+    env:
+      DISPLAY: ':99.0'
+
+    steps:
+      # Step 1: Check out the repository code
+    - name: Check out code
+      uses: actions/checkout@v3
+    # Step 2: Install system dependencies and requirements
+    - name: Install dependencies
+      run: |
+        sudo apt install -y xvfb x11-utils libxkbcommon-x11-0
+        pip install -r requirements.txt
+        python -m pip install --upgrade pip
+        pip install pyside2 pytest coverage pytest-qt
+
+    - name: PyInstaller Action
+      uses: Martin005/pyinstaller-action@v1.2.0
+      with:
+        spec: main.spec  # Path to your .py or .spec file
+        requirements: requirements.txt  # Path to your requirements.txt file
+        python_ver: '3.9'  # Specific Python version to use
+        exe_path: './dist'  # Where the executable will be stored
+        upload_exe_with_name: 'BestTodo'  # The name of the uploaded artifact (optional)
+
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      with:
+        tag_name: v1.0.0  # Change to your release version
+        release_name: Release v1.0.0  # Customize the release name
+        draft: false
+        prerelease: false
+
+    # Step 5: Upload the generated executable to the release
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}  # Use the upload URL from the release step
+        asset_path: ./dist/my_executable  # Path to the executable
+        asset_name: my_executable  # The name of the uploaded file
+        asset_content_type: application/octet-stream
