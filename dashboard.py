@@ -1,12 +1,18 @@
-import sys
+import sys,os
 from PyQt6 import QtWidgets, uic, QtCore
 import sqlite3
 from details_window import DetailsWindow
+from ui_files.mainwindow_ui import Ui_MainWindow
+from utils import resource_path
 
-class Dashboard(QtWidgets.QMainWindow):
+
+basedir = os.path.dirname(__file__)
+
+class Dashboard(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
-        uic.loadUi("mainwindow.ui", self)
+        # uic.loadUi(resource_path(os.path.join('ui_files', 'mainwindow.ui')), self)
+        self.setupUi(self)
         self.conn, self.cursor = self.init_db()
         
         self.date_input = self.dateEdit
@@ -26,7 +32,13 @@ class Dashboard(QtWidgets.QMainWindow):
         self.details_window = DetailsWindow(self)
         
     def init_db(self):
-        conn = sqlite3.connect("todo.db")
+        db_path = resource_path('todo.db')
+        if not os.path.exists(db_path):
+            print("Database does not exist. It will be created.")
+        else:
+            print("Database found at:", db_path)
+
+        conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         cursor.execute("CREATE TABLE IF NOT EXISTS todos (date DATE, todo TEXT, description TEXT)")
         return conn, cursor

@@ -9,3 +9,4 @@ PySide6_Addons==6.7.3
 PySide6_Essentials==6.7.3
 pytest==8.3.3
 shiboken6==6.7.3
+appdirs
