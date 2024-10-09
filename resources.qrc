@@ -1,10 +1,10 @@
 <RCC>
     <qresource prefix="/">
-        <file alias="icons/Cute-character.png">icons/Cute-character.png</file>
-        <file alias="icons/App-icon.png">icons/App-icon.png</file>
-        <file alias="icons/Calendar.png">icons/Calendar.png</file>
-        <file alias="icons/Add-task.png">icons/Add-task.png</file>
-        <file alias="icons/Delete-task.png">icons/Delete-task.png</file>
-        <file alias="icons/App-icon.svg">icons/App-icon.svg</file>
+        <file alias="icons/Add-task.png">icons\Add-task.png</file>
+        <file alias="icons/App-icon.png">icons\App-icon.png</file>
+        <file alias="icons/App-icon.svg">icons\App-icon.svg</file>
+        <file alias="icons/Calendar.png">icons\Calendar.png</file>
+        <file alias="icons/Cute-character.png">icons\Cute-character.png</file>
+        <file alias="icons/Delete-task.png">icons\Delete-task.png</file>
     </qresource>
 </RCC>

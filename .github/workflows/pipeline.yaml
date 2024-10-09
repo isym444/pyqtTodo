@@ -8,6 +8,9 @@ on:
     branches:
       - '**'  # This triggers the pipeline on any pull request
 
+permissions:
+  contents: write
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -43,3 +46,77 @@ jobs:
     - name: Run Unit Tests
       run: |
         pytest
+
+  generate-exe-and-publish-release:
+    runs-on: windows-latest
+    needs: build-and-test  # This ensures that generate-exe depends on build-and-test
+    env:
+      DISPLAY: ':99.0'
+
+    steps:
+      # Step 1: Check out the repository code
+    - name: Check out code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    # Step 2: Install system dependencies and requirements
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        python -m pip install --upgrade pip
+        pip install pyside2 pytest coverage pytest-qt
+
+    - name: PyInstaller Action
+      uses: Martin005/pyinstaller-action@v1.2.0
+      with:
+        spec: main.spec  # Path to your .py or .spec file
+        requirements: requirements.txt  # Path to your requirements.txt file
+        python_ver: '3.9'  # Specific Python version to use
+        exe_path: './dist'  # Where the executable will be stored
+        upload_exe_with_name: 'BestTodo'  # The name of the uploaded artifact (optional)
+
+    # Add this step to create the zip file
+    - name: Create Zip Archive
+      run: |
+        Compress-Archive -Path './dist/*' -DestinationPath 'my-artifact.zip'
+
+    # Step 6: Generate a unique tag name
+    - name: Generate Tag Name
+      id: generate_tag
+      shell: bash
+      run: echo "TAG=v0.0.$GITHUB_RUN_NUMBER" >> $GITHUB_OUTPUT
+
+    # Step 7: Create and push the tag
+    - name: Create and Push Tag
+      run: |
+        git config user.name "${{ github.actor }}"
+        git config user.email "${{ github.actor }}@users.noreply.github.com"
+        git tag ${{ steps.generate_tag.outputs.TAG }} -a -m "Release ${{ steps.generate_tag.outputs.TAG }}"
+        git push origin ${{ steps.generate_tag.outputs.TAG }}
+  
+    # Step 8: Create GitHub Release
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.generate_tag.outputs.TAG }}
+        release_name: Release ${{ steps.generate_tag.outputs.TAG }}
+        body: |
+          Changes in this Release
+          - First Change
+          - Second Change
+        draft: false
+        prerelease: false
+
+    # Step 9: Upload the zip file as a release asset
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./my-artifact.zip
+        asset_name: my-artifact.zip
+        asset_content_type: application/zip
