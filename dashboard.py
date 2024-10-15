@@ -7,7 +7,7 @@ from details_window import DetailsWindow
 from ui_files.mainwindow_ui import Ui_MainWindow
 from utils import resource_path
 
-
+# test
 basedir = os.path.dirname(__file__)
 
 class Dashboard(QtWidgets.QMainWindow, Ui_MainWindow):
