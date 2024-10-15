@@ -1,10 +1,12 @@
 from PyQt6 import QtWidgets, uic
+from PyQt6.QtCore import Qt, pyqtSignal
 import sys,os
 from ui_files.anotherwindow_ui import Ui_MainWindow
 from utils import resource_path
 
 
 class DetailsWindow(QtWidgets.QMainWindow, Ui_MainWindow):
+    on_closed = pyqtSignal(object) #define a signal on detailWindow close
     def __init__(self, parent=None):
         super().__init__(parent)
         # uic.loadUi(resource_path(os.path.join('ui_files', 'anotherwindow.ui')), self)
@@ -15,3 +17,8 @@ class DetailsWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.findChild(QtWidgets.QLabel, 'date_field').setText(date)
         self.findChild(QtWidgets.QLabel, 'description_field').setText(description)
         self.show()
+
+    def closeEvent(self, event): #called when detailWindow is closed through a signal
+        print("closed window")
+        self.on_closed.emit(self) #emit the on_closed signal
+        super().closeEvent(event)  # Call the parent class closeEvent
