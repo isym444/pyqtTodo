@@ -17,12 +17,15 @@ class Dashboard(QtWidgets.QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.conn, self.cursor = self.init_db()
         
-        self.date_input = self.dateEdit
-        self.todo_input = self.lineEdit
-        self.description_input = self.plainTextEdit
-        self.add_button = self.pushButton
-        self.list_view = self.listWidget
-        self.remove_button = self.pushButton_2
+        self.centralwidget = self.findChild(QtWidgets.QWidget, 'centralwidget')
+        self.date_input = self.findChild(QtWidgets.QDateEdit, 'dateEdit')
+        self.todo_input = self.findChild(QtWidgets.QLineEdit, 'lineEdit')
+        self.description_input = self.findChild(QtWidgets.QPlainTextEdit, 'plainTextEdit')
+        self.add_button = self.findChild(QtWidgets.QPushButton, 'pushButton')
+        self.list_view = self.findChild(QtWidgets.QListWidget, 'listWidget')
+        self.remove_button = self.findChild(QtWidgets.QPushButton, 'pushButton_2')
+        self.logo_label = self.findChild(QtWidgets.QLabel, 'logoLabel')
+        self.title = self.findChild(QtWidgets.QLabel, 'label')
         
         self.date_input.setDate(QtCore.QDate.currentDate())
         
@@ -39,6 +42,8 @@ class Dashboard(QtWidgets.QMainWindow, Ui_MainWindow):
 
         #Shift + Eneter to new line in the description field
         self.description_input.installEventFilter(self)
+    
+    
 
     # event of Shfit + Enter to new line in the description field
     def eventFilter(self, obj, event):
@@ -76,7 +81,7 @@ class Dashboard(QtWidgets.QMainWindow, Ui_MainWindow):
         self.rows = self.cursor.fetchall()
         for row in self.rows:
             self.list_view.addItem(f"{row[0]} - {row[1]}")
-    
+
     def add_todo(self):
         if self.todo_input.text() == "":
             return
@@ -94,7 +99,7 @@ class Dashboard(QtWidgets.QMainWindow, Ui_MainWindow):
         self.description_input.clear()
         
         self.refresh_rows()
-    
+
     def remove_todo(self):
         current_row = self.list_view.currentRow()
         if current_row != -1 and current_row < len(self.rows):
@@ -102,7 +107,7 @@ class Dashboard(QtWidgets.QMainWindow, Ui_MainWindow):
             self.conn.commit()
             self.list_view.takeItem(current_row)
             self.refresh_rows()
-    
+        
     def refresh_rows(self):
         self.cursor.execute("SELECT * FROM todos")
         self.rows = self.cursor.fetchall()
