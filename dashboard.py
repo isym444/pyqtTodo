@@ -31,7 +31,7 @@ class Dashboard(QtWidgets.QMainWindow, Ui_MainWindow):
         self.remove_button.clicked.connect(self.remove_todo)
         self.list_view.itemDoubleClicked.connect(self.show_details)
         
-        self.details_window = DetailsWindow(self)
+        self.details_window = [] #array of DetailsWindow(not inforced)
 
         #press enter to add todo
         shortcut = QShortcut(QKeySequence("Return"), self)
@@ -115,8 +115,17 @@ class Dashboard(QtWidgets.QMainWindow, Ui_MainWindow):
             self.cursor.execute("SELECT description FROM todos WHERE date = ? AND todo = ?", (date, todo))
             row = self.cursor.fetchone()
             if row:
-                self.details_window.show_details(todo, date, row[0])
+                print(self.details_window)
+                d_window = DetailsWindow() #creates detailWindow
+                d_window.show_details(todo,date,row[0])
+                d_window.on_closed.connect(self.closed_detail_window) # connects on_closed with function
+                self.details_window.append(d_window) #appends detailWindow to currectly opened array of detailWindows
+                print(self.details_window)
     
     def closeEvent(self, event):
         self.conn.close()
         event.accept()
+
+    def closed_detail_window(self,window):
+        if window in self.details_window: #if found in array of instanced detailWindow
+            self.details_window.remove(window) # then remove window
