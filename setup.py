@@ -7,8 +7,9 @@ OPTIONS = {
     'packages': ['PyQt6'],
     'includes': ['sip', 'PyQt6.QtWidgets', 'PyQt6.QtGui', 'PyQt6.QtCore'],
     'plist': {
-        'LSArchitecturePriority': ['arm64', 'x86_64'],  # どちらもサポート
-    }
+        'LSArchitecturePriority': ['x86_64', 'arm64'],  # Universal対応に設定（x86_64とarm64の順に優先）
+    },
+    'arch': 'universal2',  # Universal2バイナリの生成を指定
 }
 
 setup(
