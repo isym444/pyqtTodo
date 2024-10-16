@@ -94,13 +94,15 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      # Step 2: Install gettext and link it (to resolve missing libintl.8.dylib)
-      - name: Install gettext and create symbolic link
+      # Step 2: Reinstall gettext and set environment variables (to resolve missing libintl.8.dylib)
+      - name: Reinstall gettext and set env
         run: |
           brew update
-          brew install gettext
+          brew reinstall gettext
           GETTEXT_PATH=$(brew --prefix gettext)
-          sudo ln -s "${GETTEXT_PATH}/lib/libintl.8.dylib" /usr/local/lib/libintl.8.dylib || true
+          export DYLD_LIBRARY_PATH="${GETTEXT_PATH}/lib:$DYLD_LIBRARY_PATH"
+        env:
+          DYLD_LIBRARY_PATH: "${GETTEXT_PATH}/lib"
 
       # Step 3: Set up Python environment for macOS (Intel)
       - name: Set up Python 3.9 for Intel
@@ -132,6 +134,7 @@ jobs:
         with:
           name: macos-artifact-intel
           path: my-macos-app-intel.zip
+
 
   generate-app-apple-silicon:
     runs-on: macos-latest
