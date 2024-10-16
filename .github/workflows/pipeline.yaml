@@ -115,13 +115,15 @@ jobs:
       - name: Install Python 3.9
         run: |
           arch -x86_64 /usr/local/bin/brew install python@3.9
-          sudo rm -f /usr/local/bin/2to3-3.9 /usr/local/bin/idle3.9 /usr/local/bin/pydoc3.9 /usr/local/bin/python3.9 /usr/local/bin/python3.9-config || true
+          # Remove conflicting files if they exist
+          sudo rm -f /usr/local/bin/2to3-3.9 /usr/local/bin/idle3.9 /usr/local/bin/pydoc3.9 /usr/local/bin/python3.9 /usr/local/bin/python3.9-config
+          # Force link Python 3.9
           arch -x86_64 /usr/local/bin/brew link --overwrite python@3.9
 
       # Step 5: Set Python environment and determine the correct path
       - name: Determine Python path
         id: python_path
-        run: echo "PYTHON_PATH=$(brew --prefix python@3.9)/bin/python3.9" >> $GITHUB_ENV
+        run: echo "PYTHON_PATH=$(/usr/local/bin/brew --prefix python@3.9)/bin/python3.9" >> $GITHUB_ENV
 
       # Step 6: Install dependencies using the correct Python path
       - name: Install dependencies
@@ -148,9 +150,6 @@ jobs:
         with:
           name: macos-artifact-intel
           path: my-macos-app-intel.zip
-
-
-
 
   generate-app-apple-silicon:
     runs-on: macos-latest
