@@ -106,8 +106,8 @@ jobs:
       # Step 3: Install Python 3.9 using Homebrew
       - name: Install Python 3.9
         run: |
-          brew install python@3.9
-          brew link --force python@3.9
+          arch -x86_64 brew install python@3.9
+          arch -x86_64 brew link --force python@3.9
 
       # Step 4: Set Python environment and determine the correct path
       - name: Determine Python path
