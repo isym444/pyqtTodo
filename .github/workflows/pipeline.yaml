@@ -117,11 +117,11 @@ jobs:
       run: |
         zip -r my-macos-app.zip dist/*.app
 
-        - name: Upload macOS Artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: macos-artifact
-          path: my-macos-app.zip
+    - name: Upload macOS Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: macos-artifact
+        path: my-macos-app.zip
 
   create-release:
     runs-on: ubuntu-latest
