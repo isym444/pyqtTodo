@@ -3,10 +3,10 @@ name: Python CI Pipeline
 on:
   push:
     branches:
-      - '**'
+      - '**'  # This triggers the pipeline on a push to any branch
   pull_request:
     branches:
-      - '**'
+      - '**'  # This triggers the pipeline on any pull request
 
 permissions:
   contents: write
@@ -14,93 +14,110 @@ permissions:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    env:
+        DISPLAY: ':99.0'
+
+
     steps:
-      - name: Check out code
-        uses: actions/checkout@v3
+    # Step 1: Check out the repository code
+    - name: Check out code
+      uses: actions/checkout@v3
 
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
+    # Step 2: Set up Python environment
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
 
-      - uses: tlambert03/setup-qt-libs@v1
+    - uses: tlambert03/setup-qt-libs@v1
+    - name: build "display"
+      run: |
+        /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX
 
-      - name: build "display"
-        run: |
-          /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX
-
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          sudo apt install -y xvfb x11-utils libxkbcommon-x11-0
-          python -m pip install --upgrade pip
-          pip install pyside2 pytest coverage pytest-qt
-
-      - name: Run Unit Tests
-        run: |
-          pytest
+    # Step 3: Install system dependencies for PyQt (OpenGL and Xvfb for headless mode)
+    - name: Install system dependencies
+      run: |
+        pip install -r requirements.txt
+        sudo apt install -y xvfb x11-utils libxkbcommon-x11-0
+        python -m pip install --upgrade pip
+        pip install pyside2 pytest coverage pytest-qt
+  
+    # Step 5: Run tests with Xvfb (for headless PyQt)
+    - name: Run Unit Tests
+      run: |
+        pytest
 
   generate-exe:
     runs-on: windows-latest
-    needs: build-and-test
+    needs: build-and-test  # This ensures that generate-exe depends on build-and-test
+    env:
+      DISPLAY: ':99.0'
+
     steps:
-      - name: Check out code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+    # Step 1: Check out the repository code
+    - name: Check out code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    # Step 2: Install system dependencies and requirements
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        python -m pip install --upgrade pip
+        pip install pyside2 pytest coverage pytest-qt
 
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          python -m pip install --upgrade pip
-          pip install pyside2 pytest coverage pytest-qt
+    - name: PyInstaller Action
+      uses: Martin005/pyinstaller-action@v1.2.0
+      with:
+        spec: main.spec  # Path to your .py or .spec file
+        requirements: requirements.txt  # Path to your requirements.txt file
+        python_ver: '3.9'  # Specific Python version to use
+        exe_path: './dist'  # Where the executable will be stored
+        upload_exe_with_name: 'BestTodo'  # The name of the uploaded artifact (optional)
 
-      - name: PyInstaller Action
-        uses: Martin005/pyinstaller-action@v1.2.0
-        with:
-          spec: main.spec
-          requirements: requirements.txt
-          python_ver: '3.9'
-          exe_path: './dist'
-          upload_exe_with_name: 'BestTodo'
+    - name: Create Zip Archive for Windows
+      run: |
+        Compress-Archive -Path './dist/*' -DestinationPath 'my-windows-artifact.zip'
 
-      - name: Create Zip Archive
-        run: |
-          Compress-Archive -Path './dist/*' -DestinationPath 'my-windows-artifact.zip'
+    - name: Upload Windows Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: windows-artifact
+        path: my-windows-artifact.zip
 
-      - name: Upload Windows Artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: windows-artifact
-          path: my-windows-artifact.zip
 
   generate-app:
     runs-on: macos-latest
     needs: build-and-test
     steps:
-      - name: Check out code
-        uses: actions/checkout@v3
+    # Step 1: Check out the repository code
+    - name: Check out code
+      uses: actions/checkout@v3
 
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
+    # Step 2: Set up Python environment for macOS
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install py2app pytest coverage pytest-qt
+    # Step 3: Install dependencies
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install py2app pytest coverage pytest-qt
 
-      - name: Build macOS .app
-        run: |
-          python setup.py py2app
+    # Step 4: Build the .app using py2app
+    - name: Build macOS .app
+      run: |
+        python setup.py py2app
 
-      - name: Create Zip Archive for the .app
-        run: |
-          zip -r my-macos-app.zip dist/*.app
+    # Step 5: Create Zip Archive for the .app
+    - name: Create Zip Archive
+      run: |
+        zip -r my-macos-app.zip dist/*.app
 
-      - name: Upload macOS Artifact
+        - name: Upload macOS Artifact
         uses: actions/upload-artifact@v3
         with:
           name: macos-artifact
@@ -123,11 +140,13 @@ jobs:
         with:
           name: macos-artifact
 
+      # Step to Generate a Unique Tag Name
       - name: Generate Tag Name
         id: generate_tag
         shell: bash
         run: echo "TAG=v0.0.$GITHUB_RUN_NUMBER" >> $GITHUB_OUTPUT
 
+      # Step to Create and Push Tag
       - name: Create and Push Tag
         run: |
           git config user.name "${{ github.actor }}"
@@ -168,4 +187,4 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./my-macos-app.zip
           asset_name: my-macos-app.zip
-          asset_content_type: application/zip
+          asset_content_type: application/zip          
