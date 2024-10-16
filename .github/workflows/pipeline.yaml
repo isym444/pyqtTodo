@@ -201,25 +201,13 @@ jobs:
         with:
           name: macos-artifact-apple-silicon
 
-      # Step 5: Verify Downloaded Artifacts
-      - name: List Downloaded Artifacts
-        run: ls -l
-
-      # Step 6: Create Combined macOS Zip (Intel and Apple Silicon)
-      - name: Create Combined macOS Zip
-        run: |
-          mkdir combined-macos-app
-          unzip macos-artifact-intel.zip -d combined-macos-app
-          unzip macos-artifact-apple-silicon.zip -d combined-macos-app
-          zip -r combined-macos-app.zip combined-macos-app
-
-      # Step 7: Generate a Unique Tag Name
+      # Step 5: Generate a Unique Tag Name
       - name: Generate Tag Name
         id: generate_tag
         shell: bash
         run: echo "TAG=v0.0.$GITHUB_RUN_NUMBER" >> $GITHUB_OUTPUT
 
-      # Step 8: Create and Push Tag
+      # Step 6: Create and Push Tag
       - name: Create and Push Tag
         run: |
           git config user.name "${{ github.actor }}"
@@ -227,7 +215,7 @@ jobs:
           git tag ${{ steps.generate_tag.outputs.TAG }} -a -m "Release ${{ steps.generate_tag.outputs.TAG }}"
           git push origin ${{ steps.generate_tag.outputs.TAG }}
 
-      # Step 9: Create GitHub Release
+      # Step 7: Create GitHub Release
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
@@ -239,11 +227,12 @@ jobs:
           body: |
             Changes in this Release
             - Windows Executable
-            - macOS Intel and Apple Silicon Combined
+            - macOS Intel Build
+            - macOS Apple Silicon Build
           draft: false
           prerelease: false
 
-      # Step 10: Upload Windows Artifact as Release Asset
+      # Step 8: Upload Windows Artifact as Release Asset
       - name: Upload Windows Artifact as Release Asset
         uses: actions/upload-release-asset@v1
         env:
@@ -251,17 +240,29 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./windows-artifact.zip
-          asset_name: my-windows-artifact.zip
+          asset_name: windows-artifact.zip
           asset_content_type: application/zip
 
-      # Step 11: Upload Combined macOS Artifact as Release Asset
-      - name: Upload Combined macOS Artifact as Release Asset
+      # Step 9: Upload macOS Intel Artifact as Release Asset
+      - name: Upload macOS Intel Artifact as Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./combined-macos-app.zip
-          asset_name: combined-macos-app.zip
+          asset_path: ./macos-artifact-intel.zip
+          asset_name: macos-artifact-intel.zip
           asset_content_type: application/zip
+
+      # Step 10: Upload macOS Apple Silicon Artifact as Release Asset
+      - name: Upload macOS Apple Silicon Artifact as Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./macos-artifact-apple-silicon.zip
+          asset_name: macos-artifact-apple-silicon.zip
+          asset_content_type: application/zip
+
       
