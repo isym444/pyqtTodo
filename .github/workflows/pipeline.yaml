@@ -94,11 +94,12 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      # Step 2: Install gettext (to resolve missing libintl.8.dylib)
-      - name: Install gettext
+      # Step 2: Install gettext and link it (to resolve missing libintl.8.dylib)
+      - name: Install gettext and link it
         run: |
+          brew update
           brew install gettext
-          brew link gettext --force
+          sudo ln -s /usr/local/opt/gettext/lib/libintl.8.dylib /usr/local/lib/libintl.8.dylib
 
       # Step 3: Set up Python environment for macOS (Intel)
       - name: Set up Python 3.9 for Intel
