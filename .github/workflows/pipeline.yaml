@@ -154,6 +154,7 @@ jobs:
           path: my-macos-app-intel.zip
 
 
+
   generate-app-apple-silicon:
     runs-on: macos-latest
     needs: build-and-test
