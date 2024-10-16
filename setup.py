@@ -4,7 +4,7 @@ APP = ['main.py']  # エントリーポイントとなるPythonスクリプト�
 DATA_FILES = []    # 必要なデータファイルをリスト形式で指定します（画像、設定ファイルなど）
 OPTIONS = {
     'argv_emulation': True,          # コマンドライン引数のサポートを有効化
-    'packages': ['PyQt5'],           # 使用するPythonパッケージ
+    'packages': ['PyQt6'],           # 使用するPythonパッケージ
     'includes': ['sip'],             # その他に含めたいパッケージ
 }
 
