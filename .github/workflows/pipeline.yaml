@@ -93,26 +93,26 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      # Step 2: Install gettext and link it properly
-      - name: Install gettext and create symbolic link
+      # Step 2: Install gettext and link it properly using Intel brew
+      - name: Install gettext using Intel brew and create symbolic link
         run: |
-          brew update
-          brew reinstall gettext
-          GETTEXT_PATH=$(brew --prefix gettext)
+          arch -x86_64 /usr/local/bin/brew update
+          arch -x86_64 /usr/local/bin/brew reinstall gettext
+          GETTEXT_PATH=$(/usr/local/bin/brew --prefix gettext)
           sudo ln -s "${GETTEXT_PATH}/lib/libintl.8.dylib" /usr/local/lib/libintl.8.dylib || true
         env:
           HOMEBREW_NO_AUTO_UPDATE: 1
 
-      # Step 3: Install Python 3.9 using Homebrew
-      - name: Install Python 3.9
+      # Step 3: Install Python 3.9 using Intel brew
+      - name: Install Python 3.9 using Intel brew
         run: |
-          arch -x86_64 brew install python@3.9
-          arch -x86_64 brew link --force python@3.9
+          arch -x86_64 /usr/local/bin/brew install python@3.9
+          arch -x86_64 /usr/local/bin/brew link --force python@3.9
 
       # Step 4: Set Python environment and determine the correct path
       - name: Determine Python path
         id: python_path
-        run: echo "PYTHON_PATH=$(brew --prefix python@3.9)/bin/python3.9" >> $GITHUB_ENV
+        run: echo "PYTHON_PATH=$(/usr/local/bin/brew --prefix python@3.9)/bin/python3.9" >> $GITHUB_ENV
 
       # Step 5: Install dependencies using the correct Python path
       - name: Install dependencies
@@ -139,6 +139,7 @@ jobs:
         with:
           name: macos-artifact-intel
           path: my-macos-app-intel.zip
+      
       
 
 
