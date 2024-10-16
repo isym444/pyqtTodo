@@ -94,47 +94,49 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      # Step 2: Reinstall gettext and set environment variables (to resolve missing libintl.8.dylib)
-      - name: Reinstall gettext and set env
+      # Step 2: Install gettext and link it properly
+      - name: Install gettext and create symbolic link
         run: |
           brew update
           brew reinstall gettext
           GETTEXT_PATH=$(brew --prefix gettext)
-          export DYLD_LIBRARY_PATH="${GETTEXT_PATH}/lib:$DYLD_LIBRARY_PATH"
+          sudo ln -s "${GETTEXT_PATH}/lib/libintl.8.dylib" /usr/local/lib/libintl.8.dylib || true
         env:
-          DYLD_LIBRARY_PATH: "${GETTEXT_PATH}/lib"
+          HOMEBREW_NO_AUTO_UPDATE: 1
 
-      # Step 3: Set up Python environment for macOS (Intel)
-      - name: Set up Python 3.9 for Intel
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-          architecture: 'x64'  # Intel用
+      # Step 3: Install Python 3.9 using Homebrew
+      - name: Install Python 3.9
+        run: |
+          brew install python@3.9
+          brew link --force python@3.9
 
-      # Step 4: Install dependencies
+      # Step 4: Set Python environment
+      - name: Add Python to PATH
+        run: echo "/usr/local/opt/python@3.9/bin" >> $GITHUB_PATH
+
+      # Step 5: Install dependencies
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
+          python3.9 -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install py2app pytest coverage pytest-qt
 
-      # Step 5: Build the .app using py2app for Intel
+      # Step 6: Build the .app using py2app for Intel
       - name: Build macOS .app for Intel
         run: |
-          python setup.py py2app
+          python3.9 setup.py py2app
 
-      # Step 6: Create Zip Archive for the .app
+      # Step 7: Create Zip Archive for the .app
       - name: Create Zip Archive for Intel
         run: |
           zip -r my-macos-app-intel.zip dist/*.app
 
-      # Step 7: Upload macOS Intel Artifact
+      # Step 8: Upload macOS Intel Artifact
       - name: Upload macOS Intel Artifact
         uses: actions/upload-artifact@v3
         with:
           name: macos-artifact-intel
           path: my-macos-app-intel.zip
-
 
   generate-app-apple-silicon:
     runs-on: macos-latest
