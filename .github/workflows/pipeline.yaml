@@ -188,18 +188,21 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: windows-artifact
+          path: ./  # ダウンロード場所を指定
 
       # Step 3: Download macOS Intel Artifact
       - name: Download macOS Intel Artifact
         uses: actions/download-artifact@v3
         with:
           name: macos-artifact-intel
+          path: ./  # ダウンロード場所を指定
 
       # Step 4: Download macOS Apple Silicon Artifact
       - name: Download macOS Apple Silicon Artifact
         uses: actions/download-artifact@v3
         with:
           name: macos-artifact-apple-silicon
+          path: ./  # ダウンロード場所を指定
 
       # Step 5: Generate a Unique Tag Name
       - name: Generate Tag Name
@@ -239,7 +242,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./windows-artifact.zip
+          asset_path: ./my-windows-artifact.zip
           asset_name: windows-artifact.zip
           asset_content_type: application/zip
 
@@ -250,7 +253,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./macos-artifact-intel.zip
+          asset_path: ./my-macos-app-intel.zip
           asset_name: macos-artifact-intel.zip
           asset_content_type: application/zip
 
@@ -261,8 +264,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./macos-artifact-apple-silicon.zip
+          asset_path: ./my-macos-app-apple-silicon.zip
           asset_name: macos-artifact-apple-silicon.zip
           asset_content_type: application/zip
-
-      
