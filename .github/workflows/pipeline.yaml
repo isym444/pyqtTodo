@@ -120,3 +120,75 @@ jobs:
         asset_path: ./my-artifact.zip
         asset_name: my-artifact.zip
         asset_content_type: application/zip
+
+  generate-app-and-publish-release-macos:
+    runs-on: macos-latest
+    needs: build-and-test
+    steps:
+    # Step 1: Check out the repository code
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    # Step 2: Set up Python environment for macOS
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    # Step 3: Install dependencies
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install py2app pytest coverage pytest-qt
+
+    # Step 4: Build the .app using py2app
+    - name: Build macOS .app
+      run: |
+        python setup.py py2app
+
+    # Step 5: Create Zip Archive for the .app
+    - name: Create Zip Archive
+      run: |
+        zip -r my-macos-app.zip dist/*.app
+
+    # Step 6: Generate a unique tag name for macOS
+    - name: Generate Tag Name
+      id: generate_tag_macos
+      shell: bash
+      run: echo "TAG=v0.0.$GITHUB_RUN_NUMBER-macos" >> $GITHUB_OUTPUT
+
+    # Step 7: Create and push the tag for macOS
+    - name: Create and Push Tag
+      run: |
+        git config user.name "${{ github.actor }}"
+        git config user.email "${{ github.actor }}@users.noreply.github.com"
+        git tag ${{ steps.generate_tag_macos.outputs.TAG }} -a -m "Release ${{ steps.generate_tag_macos.outputs.TAG }}"
+        git push origin ${{ steps.generate_tag_macos.outputs.TAG }}
+
+    # Step 8: Create GitHub Release for macOS
+    - name: Create GitHub Release for macOS
+      id: create_release_macos
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.generate_tag_macos.outputs.TAG }}
+        release_name: Release ${{ steps.generate_tag_macos.outputs.TAG }}
+        body: |
+          Changes in this macOS Release
+          - First Change
+          - Second Change
+        draft: false
+        prerelease: false
+
+    # Step 9: Upload the macOS app as a release asset
+    - name: Upload macOS Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release_macos.outputs.upload_url }}
+        asset_path: ./my-macos-app.zip
+        asset_name: my-macos-app.zip
+        asset_content_type: application/zip
