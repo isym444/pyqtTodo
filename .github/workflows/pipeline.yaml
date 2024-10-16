@@ -117,14 +117,16 @@ jobs:
       # Step 5: Install dependencies using the correct Python path
       - name: Install dependencies
         run: |
+          export ARCHFLAGS="-arch x86_64"
           ${{ env.PYTHON_PATH }} -m pip install --upgrade pip
           ${{ env.PYTHON_PATH }} -m pip install -r requirements.txt
           ${{ env.PYTHON_PATH }} -m pip install py2app pytest coverage pytest-qt PyQt6
 
-      # Step 6: Build the .app using py2app for Intel with ARCHFLAGS set for Intel-only
+      # Step 6: Build the .app using py2app for Intel
       - name: Build macOS .app for Intel
         run: |
-          ARCHFLAGS="-arch x86_64" ${{ env.PYTHON_PATH }} setup.py py2app
+          export ARCHFLAGS="-arch x86_64"
+          ${{ env.PYTHON_PATH }} setup.py py2app
 
       # Step 7: Create Zip Archive for the .app
       - name: Create Zip Archive for Intel
@@ -137,6 +139,7 @@ jobs:
         with:
           name: macos-artifact-intel
           path: my-macos-app-intel.zip
+
 
   generate-app-apple-silicon:
     runs-on: macos-latest
