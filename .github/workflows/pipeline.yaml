@@ -110,21 +110,22 @@ jobs:
           brew install python@3.9
           brew link --force python@3.9
 
-      # Step 4: Set Python environment
-      - name: Add Python to PATH
-        run: echo "/usr/local/opt/python@3.9/bin" >> $GITHUB_PATH
+      # Step 4: Set Python environment and determine the correct path
+      - name: Determine Python path
+        id: python_path
+        run: echo "PYTHON_PATH=$(brew --prefix python@3.9)/bin/python3.9" >> $GITHUB_ENV
 
-      # Step 5: Install dependencies using the full Python path
+      # Step 5: Install dependencies using the correct Python path
       - name: Install dependencies
         run: |
-          /usr/local/opt/python@3.9/bin/python3.9 -m pip install --upgrade pip
-          /usr/local/opt/python@3.9/bin/pip install -r requirements.txt
-          /usr/local/opt/python@3.9/bin/pip install py2app pytest coverage pytest-qt PyQt6
+          ${{ env.PYTHON_PATH }} -m pip install --upgrade pip
+          ${{ env.PYTHON_PATH }} -m pip install -r requirements.txt
+          ${{ env.PYTHON_PATH }} -m pip install py2app pytest coverage pytest-qt PyQt6
 
       # Step 6: Build the .app using py2app for Intel
       - name: Build macOS .app for Intel
         run: |
-          /usr/local/opt/python@3.9/bin/python3.9 setup.py py2app
+          ${{ env.PYTHON_PATH }} setup.py py2app
 
       # Step 7: Create Zip Archive for the .app
       - name: Create Zip Archive for Intel
@@ -137,6 +138,7 @@ jobs:
         with:
           name: macos-artifact-intel
           path: my-macos-app-intel.zip
+
 
 
   generate-app-apple-silicon:
