@@ -175,9 +175,63 @@ jobs:
           name: macos-artifact-apple-silicon
           path: my-macos-app-apple-silicon.zip
 
+  generate-app-universal:
+    runs-on: macos-latest
+    needs: build-and-test
+    steps:
+      # Step 1: Check out the repository code
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      # Step 2: Install gettext and link it properly
+      - name: Install gettext and create symbolic link
+        run: |
+          brew update
+          brew reinstall gettext
+          GETTEXT_PATH=$(brew --prefix gettext)
+          sudo ln -s "${GETTEXT_PATH}/lib/libintl.8.dylib" /usr/local/lib/libintl.8.dylib || true
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: 1
+
+      # Step 3: Install Python 3.9 using Homebrew
+      - name: Install Python 3.9
+        run: |
+          brew install python@3.9
+          brew link --force python@3.9
+
+      # Step 4: Set Python environment and determine the correct path
+      - name: Determine Python path
+        id: python_path
+        run: echo "PYTHON_PATH=$(brew --prefix python@3.9)/bin/python3.9" >> $GITHUB_ENV
+
+      # Step 5: Install dependencies using the correct Python path
+      - name: Install dependencies
+        run: |
+          ${{ env.PYTHON_PATH }} -m pip install --upgrade pip
+          ${{ env.PYTHON_PATH }} -m pip install -r requirements.txt
+          ${{ env.PYTHON_PATH }} -m pip install py2app pytest coverage pytest-qt PyQt6
+
+      # Step 6: Build the Universal .app using py2app with ARCHFLAGS set for Universal build
+      - name: Build macOS Universal .app
+        run: |
+          ARCHFLAGS="-arch x86_64 -arch arm64" ${{ env.PYTHON_PATH }} setup.py py2app
+
+      # Step 7: Create Zip Archive for the Universal .app
+      - name: Create Zip Archive for Universal
+        run: |
+          zip -r my-macos-app-universal.zip dist/*.app
+
+      # Step 8: Upload macOS Universal Artifact
+      - name: Upload macOS Universal Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: macos-artifact-universal
+          path: my-macos-app-universal.zip
+    
+  
   create-release:
     runs-on: ubuntu-latest
-    needs: [generate-exe, generate-app-intel, generate-app-apple-silicon]
+    needs: [generate-exe, generate-app-universal]
     steps:
       # Step 1: Check out the repository code
       - name: Check out code
@@ -190,27 +244,20 @@ jobs:
           name: windows-artifact
           path: ./  # ダウンロード場所を指定
 
-      # Step 3: Download macOS Intel Artifact
-      - name: Download macOS Intel Artifact
+      # Step 3: Download macOS Universal Artifact
+      - name: Download macOS Universal Artifact
         uses: actions/download-artifact@v3
         with:
-          name: macos-artifact-intel
+          name: macos-artifact-universal
           path: ./  # ダウンロード場所を指定
 
-      # Step 4: Download macOS Apple Silicon Artifact
-      - name: Download macOS Apple Silicon Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: macos-artifact-apple-silicon
-          path: ./  # ダウンロード場所を指定
-
-      # Step 5: Generate a Unique Tag Name
+      # Step 4: Generate a Unique Tag Name
       - name: Generate Tag Name
         id: generate_tag
         shell: bash
         run: echo "TAG=v0.0.$GITHUB_RUN_NUMBER" >> $GITHUB_OUTPUT
 
-      # Step 6: Create and Push Tag
+      # Step 5: Create and Push Tag
       - name: Create and Push Tag
         run: |
           git config user.name "${{ github.actor }}"
@@ -218,7 +265,7 @@ jobs:
           git tag ${{ steps.generate_tag.outputs.TAG }} -a -m "Release ${{ steps.generate_tag.outputs.TAG }}"
           git push origin ${{ steps.generate_tag.outputs.TAG }}
 
-      # Step 7: Create GitHub Release
+      # Step 6: Create GitHub Release
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
@@ -230,12 +277,11 @@ jobs:
           body: |
             Changes in this Release
             - Windows Executable
-            - macOS Intel Build
-            - macOS Apple Silicon Build
+            - macOS Universal Build
           draft: false
           prerelease: false
 
-      # Step 8: Upload Windows Artifact as Release Asset
+      # Step 7: Upload Windows Artifact as Release Asset
       - name: Upload Windows Artifact as Release Asset
         uses: actions/upload-release-asset@v1
         env:
@@ -246,24 +292,13 @@ jobs:
           asset_name: windows-artifact.zip
           asset_content_type: application/zip
 
-      # Step 9: Upload macOS Intel Artifact as Release Asset
-      - name: Upload macOS Intel Artifact as Release Asset
+      # Step 8: Upload macOS Universal Artifact as Release Asset
+      - name: Upload macOS Universal Artifact as Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./my-macos-app-intel.zip
-          asset_name: macos-artifact-intel.zip
-          asset_content_type: application/zip
-
-      # Step 10: Upload macOS Apple Silicon Artifact as Release Asset
-      - name: Upload macOS Apple Silicon Artifact as Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./my-macos-app-apple-silicon.zip
-          asset_name: macos-artifact-apple-silicon.zip
+          asset_path: ./my-macos-app-universal.zip
+          asset_name: macos-artifact-universal.zip
           asset_content_type: application/zip
