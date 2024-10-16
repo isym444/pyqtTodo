@@ -1,16 +1,19 @@
 from setuptools import setup
 
-APP = ['main.py']  # エントリーポイントとなるPythonスクリプトを指定します
-DATA_FILES = []    # 必要なデータファイルをリスト形式で指定します（画像、設定ファイルなど）
+APP = ['main.py']
+DATA_FILES = []
 OPTIONS = {
-    'argv_emulation': True,          # コマンドライン引数のサポートを有効化
-    'packages': ['PyQt6'],           # 使用するPythonパッケージ
-    'includes': ['sip'],             # その他に含めたいパッケージ
+    'argv_emulation': True,
+    'packages': ['PyQt6'],
+    'includes': ['sip', 'PyQt6.QtWidgets', 'PyQt6.QtGui', 'PyQt6.QtCore'],
+    'plist': {
+        'LSArchitecturePriority': ['arm64', 'x86_64'],  # どちらもサポート
+    }
 }
 
 setup(
     app=APP,
     data_files=DATA_FILES,
     options={'py2app': OPTIONS},
-    setup_requires=['py2app'],       # py2appをビルドプロセスで使うため指定
+    setup_requires=['py2app'],
 )
