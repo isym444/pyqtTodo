@@ -1,22 +1,21 @@
 from setuptools import setup
 
-APP = ['main.py']  # Replace with the main entry point of your PyQt6 app
-DATA_FILES = []  # Any additional data files you want to include
+APP = ['main.py']  # Replace with your main Python script
+DATA_FILES = []  # Add any additional files your app needs
 OPTIONS = {
-    'argv_emulation': True,  # Helps with file handling in GUI apps
-    'packages': ['PyQt6'],  # Include necessary packages like PyQt6
-    'iconfile': 'app_icon.icns',  # Optional: specify the path to your app icon
+    'argv_emulation': True,  # Enable for macOS drag-and-drop
+    'packages': ['PyQt6'],  # Include necessary packages
     'plist': {
-        'CFBundleName': 'YourAppName',  # Replace with your app name
+        'CFBundleName': 'YourAppName',  # App name as displayed in macOS
         'CFBundleShortVersionString': '0.1.0',
         'CFBundleVersion': '0.1.0',
-        'CFBundleIdentifier': 'com.yourname.yourappname',  # Replace with your app identifier
+        'CFBundleIdentifier': 'com.yourname.yourappname',  # Customize with your app's identifier
     },
 }
 
 setup(
     app=APP,
-    name='YourAppName',  # Replace with your app name
+    name='YourAppName',  # Customize your app name
     data_files=DATA_FILES,
     options={'py2app': OPTIONS},
     setup_requires=['py2app'],

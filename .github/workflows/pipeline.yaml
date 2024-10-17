@@ -78,7 +78,7 @@ jobs:
 
   intel-macos-build:
     runs-on: macos-latest
-    needs: build-and-test  # Ensure the build job runs after the main tests
+    needs: build-and-test
     steps:
       - name: Check out code
         uses: actions/checkout@v3
@@ -96,8 +96,7 @@ jobs:
 
       - name: Build macOS app
         run: |
-          python setup.py py2app  # Assuming you use py2app for macOS builds
-          # Adjust this according to how you build your app for macOS
+          python setup.py py2app  # This will build the app without needing a custom .icns file
 
   upload-zip-after-builds:
     runs-on: ubuntu-latest
