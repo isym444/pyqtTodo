@@ -92,7 +92,7 @@ jobs:
         run: |
           pip install -r requirements.txt
           python -m pip install --upgrade pip
-          pip install pyside2 pytest coverage pytest-qt
+          pip install PySide6 pytest coverage pytest-qt
 
       - name: Build macOS app
         run: |
