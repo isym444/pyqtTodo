@@ -47,14 +47,14 @@ jobs:
       run: |
         pytest
 
-  generate-exe-and-publish-release:
+  generate-exe:
     runs-on: windows-latest
     needs: build-and-test  # This ensures that generate-exe depends on build-and-test
     env:
       DISPLAY: ':99.0'
 
     steps:
-      # Step 1: Check out the repository code
+    # Step 1: Check out the repository code
     - name: Check out code
       uses: actions/checkout@v3
       with:
@@ -75,48 +75,198 @@ jobs:
         exe_path: './dist'  # Where the executable will be stored
         upload_exe_with_name: 'BestTodo'  # The name of the uploaded artifact (optional)
 
-    # Add this step to create the zip file
-    - name: Create Zip Archive
+    - name: Create Zip Archive for Windows
       run: |
-        Compress-Archive -Path './dist/*' -DestinationPath 'my-artifact.zip'
+        Compress-Archive -Path './dist/*' -DestinationPath 'my-windows-artifact.zip'
 
-    # Step 6: Generate a unique tag name
-    - name: Generate Tag Name
-      id: generate_tag
-      shell: bash
-      run: echo "TAG=v0.0.$GITHUB_RUN_NUMBER" >> $GITHUB_OUTPUT
-
-    # Step 7: Create and push the tag
-    - name: Create and Push Tag
-      run: |
-        git config user.name "${{ github.actor }}"
-        git config user.email "${{ github.actor }}@users.noreply.github.com"
-        git tag ${{ steps.generate_tag.outputs.TAG }} -a -m "Release ${{ steps.generate_tag.outputs.TAG }}"
-        git push origin ${{ steps.generate_tag.outputs.TAG }}
-  
-    # Step 8: Create GitHub Release
-    - name: Create GitHub Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Upload Windows Artifact
+      uses: actions/upload-artifact@v3
       with:
-        tag_name: ${{ steps.generate_tag.outputs.TAG }}
-        release_name: Release ${{ steps.generate_tag.outputs.TAG }}
-        body: |
-          Changes in this Release
-          - First Change
-          - Second Change
-        draft: false
-        prerelease: false
+        name: windows-artifact
+        path: my-windows-artifact.zip
 
-    # Step 9: Upload the zip file as a release asset
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./my-artifact.zip
-        asset_name: my-artifact.zip
-        asset_content_type: application/zip
+
+  generate-app-intel:
+    runs-on: macos-latest
+    needs: build-and-test
+    steps:
+      # Step 1: Check out the repository code
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      # Step 2: Install gettext and link it properly
+      - name: Install gettext and create symbolic link
+        run: |
+          brew update
+          brew reinstall gettext
+          GETTEXT_PATH=$(brew --prefix gettext)
+          sudo ln -s "${GETTEXT_PATH}/lib/libintl.8.dylib" /usr/local/lib/libintl.8.dylib || true
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: 1
+
+      # Step 3: Install Python 3.9 using Homebrew
+      - name: Install Python 3.9
+        run: |
+          brew install python@3.9
+          brew link --force python@3.9
+
+      # Step 4: Set Python environment and determine the correct path
+      - name: Determine Python path
+        id: python_path
+        run: echo "PYTHON_PATH=$(brew --prefix python@3.9)/bin/python3.9" >> $GITHUB_ENV
+
+      # Step 5: Install dependencies using the correct Python path
+      - name: Install dependencies
+        run: |
+          ${{ env.PYTHON_PATH }} -m pip install --upgrade pip
+          ${{ env.PYTHON_PATH }} -m pip install -r requirements.txt
+          ${{ env.PYTHON_PATH }} -m pip install py2app pytest coverage pytest-qt PyQt6
+
+      # Step 6: Build the .app using py2app for Intel
+      - name: Build macOS .app for Intel
+        run: |
+          ${{ env.PYTHON_PATH }} setup.py py2app
+
+      # Step 7: Create Zip Archive for the .app
+      - name: Create Zip Archive for Intel
+        run: |
+          zip -r my-macos-app-intel.zip dist/*.app
+
+      # Step 8: Upload macOS Intel Artifact
+      - name: Upload macOS Intel Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: macos-artifact-intel
+          path: my-macos-app-intel.zip
+
+
+
+  generate-app-apple-silicon:
+    runs-on: macos-latest
+    needs: build-and-test
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      # Set up Python for Apple Silicon architecture
+      - name: Set up Python 3.9 for Apple Silicon
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          architecture: 'arm64'  # Apple Silicon用
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install py2app pytest coverage pytest-qt
+
+      - name: Build macOS .app for Apple Silicon
+        run: |
+          python setup.py py2app
+
+      - name: Create Zip Archive for Apple Silicon
+        run: |
+          zip -r my-macos-app-apple-silicon.zip dist/*.app
+
+      - name: Upload Apple Silicon macOS Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: macos-artifact-apple-silicon
+          path: my-macos-app-apple-silicon.zip
+
+  create-release:
+    runs-on: ubuntu-latest
+    needs: [generate-exe, generate-app-intel, generate-app-apple-silicon]
+    steps:
+      # Step 1: Check out the repository code
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      # Step 2: Download Windows Artifact
+      - name: Download Windows Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: windows-artifact
+          path: ./  # ダウンロード場所を指定
+
+      # Step 3: Download macOS Intel Artifact
+      - name: Download macOS Intel Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: macos-artifact-intel
+          path: ./  # ダウンロード場所を指定
+
+      # Step 4: Download macOS Apple Silicon Artifact
+      - name: Download macOS Apple Silicon Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: macos-artifact-apple-silicon
+          path: ./  # ダウンロード場所を指定
+
+      # Step 5: Generate a Unique Tag Name
+      - name: Generate Tag Name
+        id: generate_tag
+        shell: bash
+        run: echo "TAG=v0.0.$GITHUB_RUN_NUMBER" >> $GITHUB_OUTPUT
+
+      # Step 6: Create and Push Tag
+      - name: Create and Push Tag
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git tag ${{ steps.generate_tag.outputs.TAG }} -a -m "Release ${{ steps.generate_tag.outputs.TAG }}"
+          git push origin ${{ steps.generate_tag.outputs.TAG }}
+
+      # Step 7: Create GitHub Release
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.generate_tag.outputs.TAG }}
+          release_name: Release ${{ steps.generate_tag.outputs.TAG }}
+          body: |
+            Changes in this Release
+            - Windows Executable
+            - macOS Intel Build
+            - macOS Apple Silicon Build
+          draft: false
+          prerelease: false
+
+      # Step 8: Upload Windows Artifact as Release Asset
+      - name: Upload Windows Artifact as Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./my-windows-artifact.zip
+          asset_name: windows-artifact.zip
+          asset_content_type: application/zip
+
+      # Step 9: Upload macOS Intel Artifact as Release Asset
+      - name: Upload macOS Intel Artifact as Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./my-macos-app-intel.zip
+          asset_name: macos-artifact-intel.zip
+          asset_content_type: application/zip
+
+      # Step 10: Upload macOS Apple Silicon Artifact as Release Asset
+      - name: Upload macOS Apple Silicon Artifact as Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./my-macos-app-apple-silicon.zip
+          asset_name: macos-artifact-apple-silicon.zip
+          asset_content_type: application/zip
+
+
+          ##still it doesn't work in intel mac
