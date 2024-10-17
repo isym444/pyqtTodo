@@ -77,16 +77,18 @@ jobs:
           exe_path: './dist'  # Where the executable will be stored
           upload_exe_with_name: 'BestTodo'  # The name of the uploaded artifact (optional)
 
-      # Step 4: Check if the executable is created in dist
+      # Step 4: Check if the executable is created in dist (PowerShell version)
       - name: Check Windows dist folder contents
+        shell: pwsh
         run: |
-          if [ -d "./dist/" ]; then
-            echo "dist directory exists"
-            ls -la ./dist/
-          else
-            echo "dist directory does not exist"
-            exit 1
-          fi
+          if (Test-Path "./dist") {
+              Write-Host "dist directory exists"
+              Get-ChildItem "./dist"
+          } else {
+              Write-Host "dist directory does not exist"
+              exit 1
+          }
+
 
   intel-macos-build:
     runs-on: macos-latest
