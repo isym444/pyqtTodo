@@ -88,6 +88,12 @@ jobs:
               Write-Host "dist directory does not exist"
               exit 1
           }
+      # Upload the dist directory as an artifact for sharing between jobs
+      - name: Upload Windows build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-dist
+          path: ./dist
 
 
   intel-macos-build:
@@ -124,6 +130,14 @@ jobs:
             exit 1
           fi
 
+      # Upload the dist directory as an artifact for sharing between jobs
+      - name: Upload macOS build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: macos-dist
+          path: ./dist
+      
+
   upload-zip-after-builds:
     runs-on: ubuntu-latest
     needs: [generate-exe-and-publish-release, intel-macos-build]
@@ -131,31 +145,37 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      # Add a step to check if the dist folder exists
-      - name: Check if dist folder exists
+      # Download both Windows and macOS build artifacts
+      - name: Download Windows build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: windows-dist
+          path: ./windows-dist
+
+      - name: Download macOS build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: macos-dist
+          path: ./macos-dist
+
+      # Merge the two dist directories into one
+      - name: Merge dist directories
         run: |
-          if [ -d "./dist/" ]; then
-            echo "dist directory exists"
-          else
-            echo "dist directory does not exist"
-            exit 1
-          fi
+          mkdir -p dist
+          cp -r ./windows-dist/* ./dist/
+          cp -r ./macos-dist/* ./dist/
 
-      # Add a step to list the contents of the dist folder
-      - name: List dist folder contents
-        run: ls -la ./dist/
-
+      # Create the ZIP archive from the combined dist directory
       - name: Create Zip Archive for Windows and macOS
-        run: |
-          zip -r my-artifact.zip ./dist/  # Adjust the paths as needed
+        run: zip -r my-artifact.zip ./dist/
 
-      # Step 6: Generate a unique tag name
+      # Generate a unique tag name
       - name: Generate Tag Name
         id: generate_tag
         shell: bash
         run: echo "TAG=v0.0.$GITHUB_RUN_NUMBER" >> $GITHUB_OUTPUT
 
-      # Step 7: Create and push the tag
+      # Create and push the tag
       - name: Create and Push Tag
         run: |
           git config user.name "${{ github.actor }}"
@@ -163,7 +183,7 @@ jobs:
           git tag ${{ steps.generate_tag.outputs.TAG }} -a -m "Release ${{ steps.generate_tag.outputs.TAG }}"
           git push origin ${{ steps.generate_tag.outputs.TAG }}
 
-      # Step 8: Create GitHub Release
+      # Create GitHub Release
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
@@ -179,7 +199,7 @@ jobs:
           draft: false
           prerelease: false
 
-      # Step 9: Upload the zip file as a release asset
+      # Upload the zip file as a release asset
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
@@ -188,4 +208,4 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./my-artifact.zip
           asset_name: my-artifact.zip
-          asset_content_type: application/zip 
+          asset_content_type: application/zip
