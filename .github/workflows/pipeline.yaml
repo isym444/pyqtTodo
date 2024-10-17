@@ -67,6 +67,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyside2 pytest coverage pytest-qt
 
+      # Step 3: Build the executable with PyInstaller
       - name: PyInstaller Action
         uses: Martin005/pyinstaller-action@v1.2.0
         with:
@@ -75,6 +76,17 @@ jobs:
           python_ver: '3.9'  # Specific Python version to use
           exe_path: './dist'  # Where the executable will be stored
           upload_exe_with_name: 'BestTodo'  # The name of the uploaded artifact (optional)
+
+      # Step 4: Check if the executable is created in dist
+      - name: Check Windows dist folder contents
+        run: |
+          if [ -d "./dist/" ]; then
+            echo "dist directory exists"
+            ls -la ./dist/
+          else
+            echo "dist directory does not exist"
+            exit 1
+          fi
 
   intel-macos-build:
     runs-on: macos-latest
@@ -94,9 +106,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install PySide6 pytest coverage pytest-qt
 
+      # Step 3: Build the macOS app
       - name: Build macOS app
         run: |
           python setup.py py2app --dist-dir ./dist  # Explicitly set the output directory
+
+      # Step 4: Check if the macOS build was successful
+      - name: Check macOS dist folder contents
+        run: |
+          if [ -d "./dist/" ]; then
+            echo "dist directory exists"
+            ls -la ./dist/
+          else
+            echo "dist directory does not exist"
+            exit 1
+          fi
 
   upload-zip-after-builds:
     runs-on: ubuntu-latest
