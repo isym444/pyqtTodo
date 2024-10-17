@@ -114,23 +114,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install PySide6 pytest coverage pytest-qt
 
-      # Step 3: Build the macOS app
-      - name: Build macOS app
+      - name: Build macOS app with x86_64 architecture
+        env:
+          ARCHFLAGS: "-arch x86_64"
         run: |
-          python setup.py py2app --dist-dir ./dist  # Explicitly set the output directory
+          python setup.py py2app --dist-dir ./dist
 
-      # Step 4: Check if the macOS build was successful
-      - name: Check macOS dist folder contents
+      - name: Verify architecture
         run: |
-          if [ -d "./dist/" ]; then
-            echo "dist directory exists"
-            ls -la ./dist/
-          else
-            echo "dist directory does not exist"
-            exit 1
-          fi
+          lipo -info ./dist/YourAppName.app/Contents/MacOS/YourAppName
 
-      # Upload the dist directory as an artifact for sharing between jobs
       - name: Upload macOS build artifact
         uses: actions/upload-artifact@v3
         with:
