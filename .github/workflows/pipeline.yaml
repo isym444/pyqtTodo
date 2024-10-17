@@ -108,22 +108,34 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: Install dependencies
+      # クリーンな仮想環境を作成し、依存関係をIntel向けにインストール
+      - name: Create virtual environment and install dependencies for x86_64
         run: |
-          pip install -r requirements.txt
-          python -m pip install --upgrade pip
-          pip install PySide6 pytest coverage pytest-qt
+          python3 -m venv venv  # 新しい仮想環境を作成
+          source venv/bin/activate
+          ARCHFLAGS="-arch x86_64" pip install --upgrade pip  # Intel向けのpipをアップグレード
+          ARCHFLAGS="-arch x86_64" pip install -r requirements.txt  # Intel向けに必要なライブラリをインストール
+          ARCHFLAGS="-arch x86_64" pip install PySide6 pytest coverage pytest-qt  # Intel向けにPySide6と関連ライブラリをインストール
 
+      # アプリをIntelアーキテクチャでビルド
       - name: Build macOS app with x86_64 architecture
         env:
           ARCHFLAGS: "-arch x86_64"
         run: |
-          python setup.py py2app --dist-dir ./dist
+          source venv/bin/activate  # 仮想環境を有効化
+          python setup.py py2app --dist-dir ./dist  # distディレクトリに出力
 
-      - name: Verify architecture
+      # バイナリのアーキテクチャを確認
+      - name: Verify architecture of the app
         run: |
-          lipo -info ./dist/YourAppName.app/Contents/MacOS/YourAppName
+          otool -L ./dist/YourAppName.app/Contents/MacOS/YourAppName
 
+      # 必要に応じてrpathを修正
+      - name: Fix rpath if needed
+        run: |
+          install_name_tool -add_rpath "@executable_path/../Frameworks" ./dist/YourAppName.app/Contents/MacOS/YourAppName
+
+      # アーティファクトをアップロード（必要に応じて）
       - name: Upload macOS build artifact
         uses: actions/upload-artifact@v3
         with:
