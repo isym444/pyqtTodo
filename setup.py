@@ -7,9 +7,9 @@ OPTIONS = {
     'packages': ['PyQt6'],  # PyQt6パッケージを含める
     'includes': ['PyQt6.QtWidgets', 'PyQt6.QtCore', 'PyQt6.QtGui'],
     'frameworks': [
-        '$VIRTUAL_ENV/lib/python3.9/site-packages/PyQt6/Qt6/lib/QtWidgets.framework',
-        '$VIRTUAL_ENV/lib/python3.9/site-packages/PyQt6/Qt6/lib/QtCore.framework',
-        '$VIRTUAL_ENV/lib/python3.9/site-packages/PyQt6/Qt6/lib/QtGui.framework'
+        '/Users/runner/hostedtoolcache/Python/3.9.13/x64/lib/python3.9/site-packages/PyQt6/Qt6/lib/QtWidgets.framework',
+        '/Users/runner/hostedtoolcache/Python/3.9.13/x64/lib/python3.9/site-packages/PyQt6/Qt6/lib/QtCore.framework',
+        '/Users/runner/hostedtoolcache/Python/3.9.13/x64/lib/python3.9/site-packages/PyQt6/Qt6/lib/QtGui.framework'
     ],
     'plist': {
         'CFBundleName': 'YourAppName',
