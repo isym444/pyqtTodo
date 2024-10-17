@@ -47,9 +47,9 @@ jobs:
       run: |
         pytest
 
-  generate-exe-and-publish-release: 
+  generate-exe-and-publish-release:
     runs-on: windows-latest
-    needs: build-and-test
+    needs: build-and-test  # This ensures that generate-exe depends on build-and-test
     env:
       DISPLAY: ':99.0'
 
@@ -65,124 +65,88 @@ jobs:
         run: |
           pip install -r requirements.txt
           python -m pip install --upgrade pip
-          pip install pytest coverage pytest-qt
-    
-      # Step 3: Build Windows executable
+          pip install pyside2 pytest coverage pytest-qt
+
       - name: PyInstaller Action
         uses: Martin005/pyinstaller-action@v1.2.0
         with:
-          spec: main.spec
-          requirements: requirements.txt
-          python_ver: '3.9'
-          exe_path: './dist'
-          upload_exe_with_name: 'BestTodo'
+          spec: main.spec  # Path to your .py or .spec file
+          requirements: requirements.txt  # Path to your requirements.txt file
+          python_ver: '3.9'  # Specific Python version to use
+          exe_path: './dist'  # Where the executable will be stored
+          upload_exe_with_name: 'BestTodo'  # The name of the uploaded artifact (optional)
 
-      # Step 4: Create Zip Archive for Windows
-      - name: Create Zip Archive (Windows)
-        run: |
-          Compress-Archive -Path './dist/*' -DestinationPath './my-windows-artifact.zip'
-
-      # Step 5: Generate a unique tag name for Windows release
-      - name: Generate Tag Name (Windows)
-        id: generate_tag_win
-        run: echo "TAG=v0.0.$GITHUB_RUN_NUMBER-win" >> $GITHUB_ENV
-
-      # Step 6: Create and Push Tag for Windows
-      - name: Create and Push Tag (Windows)
-        run: |
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.actor }}@users.noreply.github.com"
-          git tag ${{ env.TAG }} -a -m "Release ${{ env.TAG }}"
-          git push origin ${{ env.TAG }}
-
-      # Step 7: Create GitHub Release for Windows
-      - name: Create GitHub Release (Windows)
-        id: create_release_win
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ env.TAG }}
-          release_name: "Release ${{ env.TAG }}"
-          draft: false
-          prerelease: false
-
-      # Step 8: Upload Windows zip file as a release asset
-      - name: Upload Windows Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release_win.outputs.upload_url }}
-          asset_path: ./my-windows-artifact.zip
-          asset_name: my-windows-artifact.zip
-          asset_content_type: application/zip
-
-  generate-macos-app-release:
+  intel-macos-build:
     runs-on: macos-latest
-    needs: build-and-test
-
+    needs: build-and-test  # Ensure the build job runs after the main tests
     steps:
-      # Step 1: Check out the repository code
       - name: Check out code
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
-      # Step 2: Install Python dependencies
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
           python -m pip install --upgrade pip
-          pip install pytest coverage pytest-qt
+          pip install pyside2 pytest coverage pytest-qt
 
-      # Step 3: Install pyinstaller for macOS
-      - name: Install pyinstaller
+      - name: Build macOS app
         run: |
-          python -m pip install pyinstaller
+          python setup.py py2app  # Assuming you use py2app for macOS builds
+          # Adjust this according to how you build your app for macOS
 
-      # Step 4: Build macOS app (Intel only)
-      - name: PyInstaller for macOS (Intel only)
+  upload-zip-after-builds:
+    runs-on: ubuntu-latest
+    needs: [generate-exe-and-publish-release, intel-macos-build]
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Create Zip Archive for Windows and macOS
         run: |
-          pyinstaller --onefile --windowed --icon "" main.py
+          zip -r my-artifact.zip ./dist/  # Adjust the paths as needed
 
-      # Step 5: Create Zip Archive for macOS
-      - name: Create Zip Archive (macOS)
-        run: |
-          zip -r ./my-macos-artifact.zip dist
+      # Step 6: Generate a unique tag name
+      - name: Generate Tag Name
+        id: generate_tag
+        shell: bash
+        run: echo "TAG=v0.0.$GITHUB_RUN_NUMBER" >> $GITHUB_OUTPUT
 
-      # Step 6: Generate a unique tag name for macOS release
-      - name: Generate Tag Name (macOS)
-        id: generate_tag_mac
-        run: echo "TAG=v0.0.$GITHUB_RUN_NUMBER-mac" >> $GITHUB_ENV
-
-      # Step 7: Create and Push Tag for macOS
-      - name: Create and Push Tag (macOS)
+      # Step 7: Create and push the tag
+      - name: Create and Push Tag
         run: |
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor }}@users.noreply.github.com"
-          git tag ${{ env.TAG }} -a -m "Release ${{ env.TAG }}"
-          git push origin ${{ env.TAG }}
+          git tag ${{ steps.generate_tag.outputs.TAG }} -a -m "Release ${{ steps.generate_tag.outputs.TAG }}"
+          git push origin ${{ steps.generate_tag.outputs.TAG }}
 
-      # Step 8: Create GitHub Release for macOS
-      - name: Create GitHub Release (macOS)
-        id: create_release_mac
+      # Step 8: Create GitHub Release
+      - name: Create GitHub Release
+        id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ env.TAG }}
-          release_name: "Release ${{ env.TAG }}"
+          tag_name: ${{ steps.generate_tag.outputs.TAG }}
+          release_name: Release ${{ steps.generate_tag.outputs.TAG }}
+          body: |
+            Changes in this Release
+            - First Change
+            - Second Change
           draft: false
           prerelease: false
 
-      # Step 9: Upload macOS zip file as a release asset
-      - name: Upload macOS Release Asset
+      # Step 9: Upload the zip file as a release asset
+      - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release_mac.outputs.upload_url }}
-          asset_path: ./my-macos-artifact.zip
-          asset_name: my-macos-artifact.zip
-          asset_content_type: application/zip
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./my-artifact.zip
+          asset_name: my-artifact.zip
+          asset_content_type: application/zip 
