@@ -65,7 +65,8 @@ jobs:
         pip install -r requirements.txt
         python -m pip install --upgrade pip
         pip install pyside2 pytest coverage pytest-qt
-
+    
+    # Step 3
     - name: PyInstaller Action
       uses: Martin005/pyinstaller-action@v1.2.0
       with:
@@ -75,53 +76,23 @@ jobs:
         exe_path: './dist'  # Where the executable will be stored
         upload_exe_with_name: 'BestTodo'  # The name of the uploaded artifact (optional)
 
-    # Add this step to create the zip file
+    # Step 4: Add this step to create the zip file
     - name: Create Zip Archive
       run: |
         Compress-Archive -Path './dist/*' -DestinationPath 'my-artifact.zip'
 
-    # Step 6: Generate a unique tag name
-    - name: Generate Tag Name
-      id: generate_tag
-      shell: bash
-      run: echo "TAG=v0.0.$GITHUB_RUN_NUMBER" >> $GITHUB_OUTPUT
-
-    # Step 7: Create and push the tag
-    - name: Create and Push Tag
-      run: |
-        git config user.name "${{ github.actor }}"
-        git config user.email "${{ github.actor }}@users.noreply.github.com"
-        git tag ${{ steps.generate_tag.outputs.TAG }} -a -m "Release ${{ steps.generate_tag.outputs.TAG }}"
-        git push origin ${{ steps.generate_tag.outputs.TAG }}
-  
-    # Step 8: Create GitHub Release
-    - name: Create GitHub Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ steps.generate_tag.outputs.TAG }}
-        release_name: Release ${{ steps.generate_tag.outputs.TAG }}
-        body: |
-          Changes in this Release
-          - First Change
-          - Second Change
-        draft: false
-        prerelease: false
-
-    # Step 9: Upload the zip file as a release asset
-    - name: Upload Release Asset
+    # Step 5: Upload Windows zip file as a release asset
+    - name: Upload Windows Release Asset
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./my-artifact.zip
-        asset_name: my-artifact.zip
+        asset_path: ./my-windows-artifact.zip
+        asset_name: my-windows-artifact.zip
         asset_content_type: application/zip
 
-  generate-mac-release:
+  generate-macos-app-release:
     runs-on: macos-latest
     needs: build-and-test
 
@@ -132,15 +103,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Step 2: Install system dependencies for PyQt on macOS
+      # Step 2: Install system dependencies for Intel macOS (no pyside2)
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
           python -m pip install --upgrade pip
-          pip install pyside2 pytest coverage pytest-qt
+          pip install pytest coverage pytest-qt
 
-      # Step 3: Build macOS app
-      - name: PyInstaller for macOS
+      # Step 3: Build macOS app (focusing on Intel)
+      - name: PyInstaller for macOS (Intel only)
         run: |
           pyinstaller --onefile --windowed main.py
 
