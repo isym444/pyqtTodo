@@ -4,8 +4,13 @@ APP = ['main.py']
 DATA_FILES = []
 OPTIONS = {
     'argv_emulation': True,
-    'packages': ['PyQt6', 'importlib'],  # 必要なパッケージを明示的に追加
-    'includes': ['PyQt6.QtCore', 'PyQt6.QtWidgets', 'PyQt6.QtGui'],
+    'packages': ['PyQt6'],  # PyQt6パッケージを含める
+    'includes': ['PyQt6.QtWidgets', 'PyQt6.QtCore', 'PyQt6.QtGui'],
+    'frameworks': [
+        '$VIRTUAL_ENV/lib/python3.9/site-packages/PyQt6/Qt6/lib/QtWidgets.framework',
+        '$VIRTUAL_ENV/lib/python3.9/site-packages/PyQt6/Qt6/lib/QtCore.framework',
+        '$VIRTUAL_ENV/lib/python3.9/site-packages/PyQt6/Qt6/lib/QtGui.framework'
+    ],
     'plist': {
         'CFBundleName': 'YourAppName',
         'CFBundleShortVersionString': '0.1.0',
