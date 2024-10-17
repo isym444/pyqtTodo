@@ -89,11 +89,9 @@ jobs:
     runs-on: macos-latest
     needs: build-and-test
     steps:
-      # Step 1: Check out the repository code
       - name: Check out code
         uses: actions/checkout@v3
 
-      # Step 2: Install Intel Homebrew to /usr/local if not already installed
       - name: Install Intel Homebrew
         if: runner.os == 'macOS'
         run: |
@@ -101,7 +99,6 @@ jobs:
           && echo 'eval "$(/usr/local/bin/brew shellenv)"' >> ~/.zprofile \
           && eval "$(/usr/local/bin/brew shellenv)"
 
-      # Step 3: Install gettext and link it properly
       - name: Install gettext and create symbolic link
         run: |
           arch -x86_64 /usr/local/bin/brew update
@@ -111,45 +108,45 @@ jobs:
         env:
           HOMEBREW_NO_AUTO_UPDATE: 1
 
-      # Step 4: Install Python 3.9 using Homebrew
       - name: Install Python 3.9
         run: |
-          arch -x86_64 /usr/local/bin/brew install python@3.9
           # Remove conflicting files if they exist
-          sudo rm -f /usr/local/bin/2to3-3.9 /usr/local/bin/idle3.9 /usr/local/bin/pydoc3.9 /usr/local/bin/python3.9 /usr/local/bin/python3.9-config
+          sudo rm -f /usr/local/bin/2to3-3.9 \
+                      /usr/local/bin/idle3.9 \
+                      /usr/local/bin/pydoc3.9 \
+                      /usr/local/bin/python3.9 \
+                      /usr/local/bin/python3.9-config
+          # Now install Python 3.9 using Homebrew
+          arch -x86_64 /usr/local/bin/brew install python@3.9
           # Force link Python 3.9
           arch -x86_64 /usr/local/bin/brew link --overwrite python@3.9
 
-      # Step 5: Set Python environment and determine the correct path
       - name: Determine Python path
         id: python_path
         run: echo "PYTHON_PATH=$(/usr/local/bin/brew --prefix python@3.9)/bin/python3.9" >> $GITHUB_ENV
 
-      # Step 6: Install dependencies using the correct Python path
       - name: Install dependencies
         run: |
-          export ARCHFLAGS="-arch x86_64"  # Intel専用に設定
+          export ARCHFLAGS="-arch x86_64"  # Set for Intel architecture
           ${{ env.PYTHON_PATH }} -m pip install --upgrade pip
           ${{ env.PYTHON_PATH }} -m pip install -r requirements.txt
           ${{ env.PYTHON_PATH }} -m pip install py2app pytest coverage pytest-qt PyQt6
 
-      # Step 7: Build the .app using py2app for Intel
       - name: Build macOS .app for Intel
         run: |
-          export ARCHFLAGS="-arch x86_64"  # Intel専用でビルド
+          export ARCHFLAGS="-arch x86_64"  # Build for Intel architecture
           ${{ env.PYTHON_PATH }} setup.py py2app
 
-      # Step 8: Create Zip Archive for the .app
       - name: Create Zip Archive for Intel
         run: |
           zip -r my-macos-app-intel.zip dist/*.app
 
-      # Step 9: Upload macOS Intel Artifact
       - name: Upload macOS Intel Artifact
         uses: actions/upload-artifact@v3
         with:
           name: macos-artifact-intel
           path: my-macos-app-intel.zip
+
 
 
   generate-app-apple-silicon:
