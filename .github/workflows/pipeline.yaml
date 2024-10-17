@@ -96,7 +96,7 @@ jobs:
 
       - name: Build macOS app
         run: |
-          python setup.py py2app  # This will build the app without needing a custom .icns file
+          python setup.py py2app --dist-dir ./dist  # Explicitly set the output directory
 
   upload-zip-after-builds:
     runs-on: ubuntu-latest
