@@ -105,6 +105,20 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
+      # Add a step to check if the dist folder exists
+      - name: Check if dist folder exists
+        run: |
+          if [ -d "./dist/" ]; then
+            echo "dist directory exists"
+          else
+            echo "dist directory does not exist"
+            exit 1
+          fi
+
+      # Add a step to list the contents of the dist folder
+      - name: List dist folder contents
+        run: ls -la ./dist/
+
       - name: Create Zip Archive for Windows and macOS
         run: |
           zip -r my-artifact.zip ./dist/  # Adjust the paths as needed
