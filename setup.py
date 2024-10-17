@@ -1,15 +1,11 @@
 from setuptools import setup
-import os
 
-# Set ARCHFLAGS to build for Intel architecture
-os.environ["ARCHFLAGS"] = "-arch x86_64"
-
-APP = ['main.py']  # Replace with your main Python file
-DATA_FILES = []  # Add any additional resources if needed
+APP = ['main.py']
+DATA_FILES = []
 OPTIONS = {
     'argv_emulation': True,
-    'packages': ['PyQt6'],
-    'includes': ['sip', 'PyQt6'],
+    'packages': ['PyQt6', 'importlib'],  # 必要なパッケージを明示的に追加
+    'includes': ['PyQt6.QtCore', 'PyQt6.QtWidgets', 'PyQt6.QtGui'],
     'plist': {
         'CFBundleName': 'YourAppName',
         'CFBundleShortVersionString': '0.1.0',

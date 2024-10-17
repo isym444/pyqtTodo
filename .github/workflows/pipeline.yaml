@@ -108,11 +108,11 @@ jobs:
         with:
           python-version: '3.9'
 
-      # クリーンな仮想環境を作成し、依存関係をIntel向けにインストール
+      # 仮想環境を作成し、Intelアーキテクチャ向けに依存関係をインストール
       - name: Create virtual environment and install dependencies for x86_64
         run: |
           python3 -m venv venv  # 新しい仮想環境を作成
-          source venv/bin/activate
+          source venv/bin/activate  # 仮想環境をアクティベート
           ARCHFLAGS="-arch x86_64" pip install --upgrade pip  # Intel向けのpipをアップグレード
           ARCHFLAGS="-arch x86_64" pip install -r requirements.txt  # Intel向けに必要なライブラリをインストール
           ARCHFLAGS="-arch x86_64" pip install PySide6 pytest coverage pytest-qt  # Intel向けにPySide6と関連ライブラリをインストール
@@ -141,7 +141,6 @@ jobs:
         with:
           name: macos-dist
           path: ./dist
-      
 
   upload-zip-after-builds:
     runs-on: ubuntu-latest
