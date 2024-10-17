@@ -267,3 +267,6 @@ jobs:
           asset_path: ./my-macos-app-apple-silicon.zip
           asset_name: macos-artifact-apple-silicon.zip
           asset_content_type: application/zip
+
+
+          ##still it doesn't work in intel mac
