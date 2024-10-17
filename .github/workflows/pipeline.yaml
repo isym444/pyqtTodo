@@ -47,7 +47,7 @@ jobs:
       run: |
         pytest
 
-  generate-exe-and-publish-release:
+  generate-exe-and-publish-release: 
     runs-on: windows-latest
     needs: build-and-test
     env:
@@ -82,13 +82,38 @@ jobs:
         run: |
           Compress-Archive -Path './dist/*' -DestinationPath './my-windows-artifact.zip'
 
-      # Step 5: Upload Windows zip file as a release asset
+      # Step 5: Generate a unique tag name for Windows release
+      - name: Generate Tag Name (Windows)
+        id: generate_tag_win
+        run: echo "TAG=v0.0.$GITHUB_RUN_NUMBER-win" >> $GITHUB_ENV
+
+      # Step 6: Create and Push Tag for Windows
+      - name: Create and Push Tag (Windows)
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git tag ${{ env.TAG }} -a -m "Release ${{ env.TAG }}"
+          git push origin ${{ env.TAG }}
+
+      # Step 7: Create GitHub Release for Windows
+      - name: Create GitHub Release (Windows)
+        id: create_release_win
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.TAG }}
+          release_name: "Release ${{ env.TAG }}"
+          draft: false
+          prerelease: false
+
+      # Step 8: Upload Windows zip file as a release asset
       - name: Upload Windows Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ steps.create_release_win.outputs.upload_url }}
           asset_path: ./my-windows-artifact.zip
           asset_name: my-windows-artifact.zip
           asset_content_type: application/zip
@@ -119,21 +144,45 @@ jobs:
       # Step 4: Build macOS app (Intel only)
       - name: PyInstaller for macOS (Intel only)
         run: |
-          pyinstaller --onefile --windowed main.py
+          pyinstaller --onefile --windowed --icon "" main.py
 
       # Step 5: Create Zip Archive for macOS
       - name: Create Zip Archive (macOS)
         run: |
           zip -r ./my-macos-artifact.zip dist
 
-      # Step 6: Upload macOS zip file as a release asset
+      # Step 6: Generate a unique tag name for macOS release
+      - name: Generate Tag Name (macOS)
+        id: generate_tag_mac
+        run: echo "TAG=v0.0.$GITHUB_RUN_NUMBER-mac" >> $GITHUB_ENV
+
+      # Step 7: Create and Push Tag for macOS
+      - name: Create and Push Tag (macOS)
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git tag ${{ env.TAG }} -a -m "Release ${{ env.TAG }}"
+          git push origin ${{ env.TAG }}
+
+      # Step 8: Create GitHub Release for macOS
+      - name: Create GitHub Release (macOS)
+        id: create_release_mac
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.TAG }}
+          release_name: "Release ${{ env.TAG }}"
+          draft: false
+          prerelease: false
+
+      # Step 9: Upload macOS zip file as a release asset
       - name: Upload macOS Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ steps.create_release_mac.outputs.upload_url }}
           asset_path: ./my-macos-artifact.zip
           asset_name: my-macos-artifact.zip
           asset_content_type: application/zip
-      
