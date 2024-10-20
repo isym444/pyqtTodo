@@ -9,7 +9,8 @@ OPTIONS = {
     'plist': {
         'LSArchitecturePriority': ['x86_64'],  # どちらもサポート
     },
-    'frameworks': ['/System/Library/Frameworks/Carbon.framework']
+    'frameworks': ['/System/Library/Frameworks/Carbon.framework'],
+    'resources':['resources/'],
 }
 
 setup(
