@@ -36,6 +36,14 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     icon=['app-icon.icns'],
+    plist={
+        'CFBundleName': 'YourApp',
+        'CFBundleDisplayName': 'YourApp',
+        'CFBundleIdentifier': 'com.yourcompany.yourapp',
+        'CFBundleVersion': '1.0',
+        'CFBundleExecutable': 'main',
+        'NSPrincipalClass': 'NSApplication'
+    }
 )
 app = BUNDLE(
     exe,
