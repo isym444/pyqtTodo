@@ -8,7 +8,7 @@ packaging==24.1
 pluggy==1.5.0
 pyinstaller==6.11.0
 pyinstaller-hooks-contrib==2024.9
-PyQt6==6.7.1
+PyQt6==6.5.2
 PyQt6-Qt6==6.7.2
 PyQt6_sip==13.8.0
 pytest==8.3.3
