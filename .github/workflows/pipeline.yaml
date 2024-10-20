@@ -93,23 +93,25 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      # Step 2: Set up Python 3.12
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.12'
-
-      # Step 3: Install dependencies
-      - name: Install dependencies
+      # Step 2: Create a virtual environment for x86_64 architecture
+      - name: Set up x86_64 Python environment
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest coverage pytest-qt PyQt6 pyinstaller
+          arch -x86_64 python3 -m venv qttodo
+          source qttodo/bin/activate
+
+      # Step 3: Install dependencies for x86_64 architecture
+      - name: Install dependencies for x86_64
+        run: |
+          source qttodo/bin/activate
+          arch -x86_64 python -m pip install --upgrade pip
+          arch -x86_64 pip install -r requirements.txt
+          arch -x86_64 pip install pytest coverage pytest-qt PyQt6 pyinstaller
 
       # Step 4: Build the .app using PyInstaller for Intel
       - name: Build macOS .app for Intel using PyInstaller
         run: |
-          python -m PyInstaller --onedir --windowed --icon=app-icon.icns --target-arch x86_64 main.py
+          source qttodo/bin/activate
+          arch -x86_64 python -m PyInstaller --onedir --windowed --icon=app-icon.icns --target-arch x86_64 main.py
 
       # Step 5: Create Zip Archive for the .app
       - name: Create Zip Archive for Intel
@@ -122,6 +124,7 @@ jobs:
         with:
           name: macos-artifact-intel
           path: my-macos-app-intel.zip
+
         
 
 

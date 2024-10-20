@@ -7,7 +7,7 @@ OPTIONS = {
     'packages': ['PyQt6'],
     'includes': ['sip', 'PyQt6.QtWidgets', 'PyQt6.QtGui', 'PyQt6.QtCore'],
     'plist': {
-        'LSArchitecturePriority': ['x86_64'],  # どちらもサポート
+        'LSArchitecturePriority': ['x86_64'],
     },
     'frameworks': ['/System/Library/Frameworks/Carbon.framework']
 }
