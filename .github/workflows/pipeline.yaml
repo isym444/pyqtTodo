@@ -94,7 +94,7 @@ jobs:
         uses: actions/checkout@v3
 
       # Step 2: Set up Python 3.8
-      - name: Set up Python 3.8
+      - name: Set up Python 3.8 (universal2)
         uses: actions/setup-python@v4
         with:
           python-version: 3.8
@@ -106,17 +106,21 @@ jobs:
           pip install -r requirements.txt
           pip install pytest coverage pytest-qt PyQt6 pyinstaller
 
-      # Step 4: Build the .app using PyInstaller for Intel
+      # Step 4: Set CFLAGS for universal2 build
+      - name: Set CFLAGS
+        run: echo "CFLAGS=-arch arm64 -arch x86_64" >> $GITHUB_ENV
+
+      # Step 5: Build the .app using PyInstaller for Intel
       - name: Build macOS .app for Intel using PyInstaller
         run: |
           python -m PyInstaller --noconfirm --onefile --windowed --icon=app-icon.icns --target-arch universal2 main.py
 
-      # Step 5: Create Zip Archive for the .app
+      # Step 6: Create Zip Archive for the .app
       - name: Create Zip Archive for Intel
         run: |
           zip -r my-macos-app-intel.zip dist/*.app
 
-      # Step 6: Upload macOS Intel Artifact
+      # Step 7: Upload macOS Intel Artifact
       - name: Upload macOS Intel Artifact
         uses: actions/upload-artifact@v3
         with:
