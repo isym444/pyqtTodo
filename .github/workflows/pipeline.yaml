@@ -93,13 +93,8 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      # Step 2: Install Rosetta 2
-      - name: Install Rosetta 2
-        run: |
-          /usr/sbin/softwareupdate --install-rosetta --agree-to-license
-
-      # Step 3: Set up Python environment with Rosetta 2
-      - name: Set up Python environment with Rosetta 2
+      # Step 3: Set up Python environment
+      - name: Set up Python environment 
         run: |
           arch -x86_64 /usr/local/bin/python3 -m venv qttodo
           source qttodo/bin/activate
