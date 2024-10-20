@@ -86,7 +86,7 @@ jobs:
 
 
   generate-app-intel:
-    runs-on: macos-latest
+    runs-on: macos-11
     needs: build-and-test
     steps:
       # Step 1: Check out the repository code
