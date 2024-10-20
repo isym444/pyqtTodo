@@ -93,11 +93,11 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      # Step 2: Set up Python 3.12
-      - name: Set up Python 3.10
+      # Step 2: Set up Python 3.8
+      - name: Set up Python 3.8
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: 3.8'
 
       # Step 3: Install dependencies
       - name: Install dependencies
@@ -109,7 +109,7 @@ jobs:
       # Step 4: Build the .app using PyInstaller for Intel
       - name: Build macOS .app for Intel using PyInstaller
         run: |
-          python -m PyInstaller --onedir --windowed --icon=app-icon.icns --target-arch x86_64 main.py
+          python -m PyInstaller --noconfirm --onedir --windowed --icon=app-icon.icns --target-arch x86_64 main.py
 
       # Step 5: Create Zip Archive for the .app
       - name: Create Zip Archive for Intel
