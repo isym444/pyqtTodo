@@ -93,13 +93,18 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      # Step 2: Create a virtual environment for x86_64 architecture
-      - name: Set up x86_64 Python environment
+      # Step 2: Install Rosetta 2
+      - name: Install Rosetta 2
         run: |
-          arch -x86_64 python3 -m venv qttodo
+          /usr/sbin/softwareupdate --install-rosetta --agree-to-license
+
+      # Step 3: Set up Python environment with Rosetta 2
+      - name: Set up Python environment with Rosetta 2
+        run: |
+          arch -x86_64 /usr/local/bin/python3 -m venv qttodo
           source qttodo/bin/activate
 
-      # Step 3: Install dependencies for x86_64 architecture
+      # Step 4: Install dependencies for x86_64 architecture
       - name: Install dependencies for x86_64
         run: |
           source qttodo/bin/activate
@@ -107,23 +112,24 @@ jobs:
           arch -x86_64 pip install -r requirements.txt
           arch -x86_64 pip install pytest coverage pytest-qt PyQt6 pyinstaller
 
-      # Step 4: Build the .app using PyInstaller for Intel
+      # Step 5: Build the .app using PyInstaller for Intel
       - name: Build macOS .app for Intel using PyInstaller
         run: |
           source qttodo/bin/activate
           arch -x86_64 python -m PyInstaller --onedir --windowed --icon=app-icon.icns --target-arch x86_64 main.py
 
-      # Step 5: Create Zip Archive for the .app
+      # Step 6: Create Zip Archive for the .app
       - name: Create Zip Archive for Intel
         run: |
           zip -r my-macos-app-intel.zip dist/*.app
 
-      # Step 6: Upload macOS Intel Artifact
+      # Step 7: Upload macOS Intel Artifact
       - name: Upload macOS Intel Artifact
         uses: actions/upload-artifact@v3
         with:
           name: macos-artifact-intel
           path: my-macos-app-intel.zip
+
 
         
 
