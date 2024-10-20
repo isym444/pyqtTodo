@@ -93,11 +93,11 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      # Step 2: Install Miniforge and Python 3.8 (universal2)
+      # Step 2: Install Miniforge and Python 3.8 (Intel)
       - name: Install Miniforge and Python 3.8
         run: |
-          curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-arm64.sh
-          bash Miniforge3-MacOSX-arm64.sh -b -p $HOME/miniforge
+          curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-x86_64.sh
+          bash Miniforge3-MacOSX-x86_64.sh -b -p $HOME/miniforge
           echo "$HOME/miniforge/bin" >> $GITHUB_PATH
           source $HOME/miniforge/bin/activate
           conda create -n py38 python=3.8
@@ -126,6 +126,7 @@ jobs:
         with:
           name: macos-artifact-intel
           path: my-macos-app-intel.zip
+
 
         
 
