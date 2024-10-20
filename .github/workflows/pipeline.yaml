@@ -110,7 +110,7 @@ jobs:
       # Step 4: Build the .app using PyInstaller for Intel
       - name: Build macOS .app for Intel using PyInstaller
         run: |
-          python -m PyInstaller --onefile --windowed --icon=path/to/your/icon.icns main.py
+          python -m PyInstaller --onefile --windowed --icon=app-icon.icns main.py
 
       # Step 5: Create Zip Archive for the .app
       - name: Create Zip Archive for Intel
