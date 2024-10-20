@@ -49,41 +49,40 @@ jobs:
 
   generate-exe:
     runs-on: windows-latest
-    needs: build-and-test  # This ensures that generate-exe depends on build-and-test
+    needs: build-and-test
     env:
       DISPLAY: ':99.0'
 
     steps:
-    # Step 1: Check out the repository code
-    - name: Check out code
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-    # Step 2: Install system dependencies and requirements
-    - name: Install dependencies
-      run: |
-        pip install -r requirements.txt
-        python -m pip install --upgrade pip
-        pip install pyside2 pytest coverage pytest-qt
+      # Step 1: Check out the repository code
+      - name: Check out code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-    - name: PyInstaller Action
-      uses: Martin005/pyinstaller-action@v1.2.0
-      with:
-        spec: main.spec  # Path to your .py or .spec file
-        requirements: requirements.txt  # Path to your requirements.txt file
-        python_ver: '3.9'  # Specific Python version to use
-        exe_path: './dist'  # Where the executable will be stored
-        upload_exe_with_name: 'BestTodo'  # The name of the uploaded artifact (optional)
+      # Step 2: Install dependencies including Pillow
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest coverage pytest-qt pillow
 
-    - name: Create Zip Archive for Windows
-      run: |
-        Compress-Archive -Path './dist/*' -DestinationPath 'my-windows-artifact.zip'
+      # Step 3: Build with PyInstaller using .ico file for Windows
+      - name: Build with PyInstaller
+        run: |
+          pyinstaller --onefile --windowed --icon=app-icon.ico main.py
 
-    - name: Upload Windows Artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: windows-artifact
-        path: my-windows-artifact.zip
+      # Step 4: Create Zip Archive for Windows
+      - name: Create Zip Archive for Windows
+        run: |
+          Compress-Archive -Path './dist/*' -DestinationPath 'my-windows-artifact.zip'
+
+      # Step 5: Upload Windows Artifact
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-artifact
+          path: my-windows-artifact.zip
+      
 
 
   generate-app-intel:
