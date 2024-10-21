@@ -64,7 +64,7 @@ jobs:
       run: |
         pip install -r requirements.txt
         python -m pip install --upgrade pip
-        pip install pyside2 pytest coverage pytest-qt
+        pip install pyside6 pytest coverage pytest-qt
 
     - name: PyInstaller Action
       uses: Martin005/pyinstaller-action@v1.2.0
