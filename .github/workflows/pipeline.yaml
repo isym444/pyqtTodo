@@ -84,7 +84,7 @@ jobs:
     - name: Upload Windows Artifact
       uses: actions/upload-artifact@v3
       with:
-        name: windows-artifact
+        name: my-windows-app  # This is the artifact name to be consistent
         path: my-windows-app.zip
 
   generate-macos:
@@ -124,7 +124,7 @@ jobs:
     - name: Upload macOS Artifact
       uses: actions/upload-artifact@v3
       with:
-        name: macos-artifact
+        name: my-macos-app  # This is the artifact name to be consistent
         path: my-macos-app.zip
 
   release-zip:
@@ -135,12 +135,12 @@ jobs:
     - name: Download Windows Artifact
       uses: actions/download-artifact@v3
       with:
-        name: windows-artifact
+        name: my-windows-app  # Make sure this matches the upload step
 
     - name: Download macOS Artifact
       uses: actions/download-artifact@v3
       with:
-        name: macos-artifact
+        name: my-macos-app  # Make sure this matches the upload step
 
     # Step 2: Generate a unique tag name
     - name: Generate Tag Name
