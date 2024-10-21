@@ -49,7 +49,7 @@ jobs:
 
   generate-exe-and-publish-release:
     runs-on: windows-latest
-    needs: build-and-test  # This ensures that generate-exe depends on build-and-test
+    needs: build-and-test  # This ensures that generate-exe depends on build-and-test-
     env:
       DISPLAY: ':99.0'
 
