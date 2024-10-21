@@ -47,7 +47,7 @@ jobs:
       run: |
         pytest
 
-  generate-exe-and-publish-release:
+  generate-windows:
     runs-on: windows-latest
     needs: build-and-test  # This ensures that generate-exe depends on build-and-test-
     env:
@@ -80,13 +80,75 @@ jobs:
       run: |
         Compress-Archive -Path './dist/*' -DestinationPath 'my-artifact.zip'
 
-    # Step 6: Generate a unique tag name
+    # Upload Windows artifact
+    - name: Upload Windows Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: windows-artifact
+        path: my-windows-app.zip
+
+  generate-macos:
+    runs-on: macos-latest
+    needs: build-and-test
+    steps:
+    # Step 1: Check out the repository code
+    - name: Check out code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    # Step 2: Set up Python environment on macOS
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    # Step 3: Install macOS system dependencies
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        python -m pip install --upgrade pip
+        pip install pyside2 pytest coverage pytest-qt
+
+    - name: PyInstaller for macOS
+      run: |
+        pip install pyinstaller
+        pyinstaller main.spec
+
+    # Create zip archive of macOS app
+    - name: Create Zip Archive
+      run: |
+        zip -r my-macos-app.zip ./dist
+
+    # Upload macOS artifact
+    - name: Upload macOS Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: macos-artifact
+        path: my-macos-app.zip
+
+  release-zip:
+    runs-on: ubuntu-latest
+    needs: [generate-windows, generate-macos]
+    steps:
+    # Step 1: Download both artifacts (Windows and macOS)
+    - name: Download Windows Artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: windows-artifact
+
+    - name: Download macOS Artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: macos-artifact
+
+    # Step 2: Generate a unique tag name
     - name: Generate Tag Name
       id: generate_tag
       shell: bash
       run: echo "TAG=v0.0.$GITHUB_RUN_NUMBER" >> $GITHUB_OUTPUT
 
-    # Step 7: Create and push the tag
+    # Step 3: Create and push the tag
     - name: Create and Push Tag
       run: |
         git config user.name "${{ github.actor }}"
@@ -94,7 +156,7 @@ jobs:
         git tag ${{ steps.generate_tag.outputs.TAG }} -a -m "Release ${{ steps.generate_tag.outputs.TAG }}"
         git push origin ${{ steps.generate_tag.outputs.TAG }}
   
-    # Step 8: Create GitHub Release
+    # Step 4: Create GitHub Release
     - name: Create GitHub Release
       id: create_release
       uses: actions/create-release@v1
@@ -110,13 +172,25 @@ jobs:
         draft: false
         prerelease: false
 
-    # Step 9: Upload the zip file as a release asset
-    - name: Upload Release Asset
+    # Step 5: Upload the Windows zip file as a release asset
+    - name: Upload Windows Release Asset
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./my-artifact.zip
-        asset_name: my-artifact.zip
+        asset_path: ./my-windows-app.zip
+        asset_name: my-windows-app.zip
         asset_content_type: application/zip
+
+    # Step 6: Upload the macOS zip file as a release asset
+    - name: Upload macOS Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./my-macos-app.zip
+        asset_name: my-macos-app.zip
+        asset_content_type: application/zip
+
