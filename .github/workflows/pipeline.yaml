@@ -113,12 +113,12 @@ jobs:
     - name: PyInstaller for macOS
       run: |
         pip install pyinstaller
-        pyinstaller main.spec
+        pyinstaller --onefile --windowed --osx-bundle-identifier main.spec
 
     # Create zip archive of macOS app
     - name: Create Zip Archive
       run: |
-        zip -r my-macos-app.zip ./dist
+        zip -r my-macos-app.zip ./dist/MyApp.app
 
     # Upload macOS artifact
     - name: Upload macOS Artifact
