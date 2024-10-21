@@ -1,6 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-
 a = Analysis(
     ['main.py'],
     pathex=[],
@@ -29,25 +28,12 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=False,
+    console=False,  # ウィンドウを表示しない設定
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['app-icon.ico'],
-    plist={
-        'CFBundleName': 'YourApp',
-        'CFBundleDisplayName': 'YourApp',
-        'CFBundleIdentifier': 'com.yourcompany.yourapp',
-        'CFBundleVersion': '1.0',
-        'CFBundleExecutable': 'main',
-        'NSPrincipalClass': 'NSApplication'
-    }
+    icon='app-icon.ico'  # Windows用のアイコン (.ico)
 )
-app = BUNDLE(
-    exe,
-    name='main.app',
-    icon='app-icon.icns',
-    bundle_identifier=None,
-)
+
