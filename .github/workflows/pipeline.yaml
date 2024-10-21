@@ -113,7 +113,7 @@ jobs:
     - name: PyInstaller for macOS
       run: |
         pip install pyinstaller
-        pyinstaller main.spec
+        pyinstaller --clean --windowed --onefile --icon=app-icon.icns main.py
 
     # Create zip archive of macOS app
     - name: Create Zip Archive
