@@ -1,32 +1,27 @@
 # -*- mode: python ; coding: utf-8 -*-
 import sys
 import os
+import glob
 
-# Function to collect necessary imports and data files for PySide2
+# Function to collect all files in ui_files directory
 from PyInstaller.utils.hooks import collect_submodules, collect_data_files
 
-# Collect all hidden imports for PySide2
-hiddenimports = collect_submodules('PySide2')
-datas = collect_data_files('PySide2', subdir='Qt5')
-
-# Define paths (adjust as necessary)
-pathex = ['.', './src']  # Adjust paths based on your source structure
+hiddenimports = collect_submodules('PyQt6')
+datas = collect_data_files('PyQt6', subdir='Qt6')
 
 a = Analysis(
-    ['main.py'],  # Your main Python script
-    pathex=pathex,
+    ['main.py'],
+    pathex=[],
     binaries=[],
-    datas=datas,
-    hiddenimports=hiddenimports,
+    datas=[],
+    hiddenimports=[],
     hookspath=[],
+    hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
-    win_no_prefer_redirects=False,
-    win_private_assemblies=False,
-    cipher=None,
+    excludes=['PySide6'],
     noarchive=False,
+    optimize=0,
 )
-
 pyz = PYZ(a.pure)
 
 exe = EXE(
@@ -37,28 +32,15 @@ exe = EXE(
     a.datas,
     [],
     exclude_binaries=False,
-    name='BestTodo',  # Name of your application
+    name='main',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=False,  # GUI app (no terminal)
+    console=False,
     disable_windowed_traceback=False,
-    target_arch='x86_64',  # Set for 64-bit Windows
+    argv_emulation=False,
+    target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='app-icon.ico'  # Path to your icon (Windows .ico file)
-)
-
-coll = COLLECT(
-    exe,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
-    strip=False,
-    upx=True,
-    name='BestTodo',
-    distpath='./dist',  # Where the executable will be placed
-    workpath='./build',  # Temporary build path
-    workpath_clean=True,  # Automatically clean the workpath after the build
 )
