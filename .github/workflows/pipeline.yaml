@@ -64,7 +64,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          pythonn -m pip install --upgrade pip
+          python -m pip install --upgrade pip
           pip install pyside2 pytest coverage pytest-qt
 
       # Step 3: Build with PyInstaller using .ico file for Windows
