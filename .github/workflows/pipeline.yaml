@@ -54,21 +54,19 @@ jobs:
       DISPLAY: ':99.0'
 
     steps:
-      # Step 1: Check out the repository code
+        # Step 1: Check out the repository code
       - name: Check out code
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
-      # Step 2: Install dependencies and requirements
+      # Step 2: Install system dependencies and requirements
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
           python -m pip install --upgrade pip
           pip install pyside2 pytest coverage pytest-qt
 
-      # Step 3: Build with PyInstaller using .ico file for Windows
-      - name: Build with PyInstaller
+      - name: PyInstaller Action
         uses: Martin005/pyinstaller-action@v1.2.0
         with:
           spec: main_exe.spec  # Path to your .py or .spec file
