@@ -60,16 +60,22 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Step 2: Install dependencies including Pillow
+      # Step 2: Install dependencies and requirements
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          pip install pytest coverage pytest-qt pillow
+          pythonn -m pip install --upgrade pip
+          pip install pyside2 pytest coverage pytest-qt
 
       # Step 3: Build with PyInstaller using .ico file for Windows
       - name: Build with PyInstaller
-        run: |
-          pyinstaller --onefile --windowed --icon=app-icon.ico main.py
+        uses: Martin005/pyinstaller-action@v1.2.0
+        with:
+          spec: main.spec  # Path to your .py or .spec file
+          requirements: requirements.txt  # Path to your requirements.txt file
+          python_ver: '3.9'  # Specific Python version to use
+          exe_path: './dist'  # Where the executable will be stored
+          upload_exe_with_name: 'BestTodo'  # The name of the uploaded artifact (optional)
 
       # Step 4: Create Zip Archive for Windows
       - name: Create Zip Archive for Windows
@@ -83,8 +89,6 @@ jobs:
           name: windows-artifact
           path: my-windows-artifact.zip
       
-
-
   generate-app-intel:
     runs-on: macos-13
     needs: build-and-test
@@ -137,7 +141,6 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
-          architecture: 'arm64'  # Apple Silicon用
 
       - name: Install dependencies
         run: |
