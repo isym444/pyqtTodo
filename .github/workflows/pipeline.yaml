@@ -85,7 +85,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: my-windows-app  # This is the artifact name to be consistent
-        path: my-windows-app.zip
+        path: my-artifact.zip
 
   generate-macos:
     runs-on: macos-latest
@@ -125,7 +125,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: my-macos-app  # This is the artifact name to be consistent
-        path: my-macos-app.zip
+        path: my-artifact.zip
 
   release-zip:
     runs-on: ubuntu-latest
