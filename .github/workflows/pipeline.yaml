@@ -3,11 +3,12 @@ name: Python CI Pipeline
 on:
   push:
     branches:
-      - '**'  # This triggers the pipeline on a push to any branch
+      - 'master'
+      - 'release/**'
   pull_request:
     branches:
-      - '**'  # This triggers the pipeline on any pull request
-
+      - 'master'
+  
 permissions:
   contents: write
 
@@ -162,6 +163,7 @@ jobs:
   create-release:
     runs-on: ubuntu-latest
     needs: [generate-exe, generate-app-intel, generate-app-apple-silicon]
+    if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')
     steps:
       # Step 1: Check out the repository code
       - name: Check out code
