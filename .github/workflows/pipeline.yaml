@@ -69,7 +69,7 @@ jobs:
     - name: PyInstaller Action
       uses: Martin005/pyinstaller-action@v1.2.0
       with:
-        spec: main.spec  # Path to your .py or .spec file
+        spec: main_exe.spec  # Path to your .py or .spec file
         requirements: requirements.txt  # Path to your requirements.txt file
         python_ver: '3.9'  # Specific Python version to use
         exe_path: './dist'  # Where the executable will be stored
