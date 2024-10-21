@@ -118,7 +118,7 @@ jobs:
     # Create zip archive of macOS app
     - name: Create Zip Archive
       run: |
-        zip -r my-macos-app.zip ./dist
+        zip -r my-macos-app.zip ./dist/main.app
 
     # Upload macOS artifact
     - name: Upload macOS Artifact
