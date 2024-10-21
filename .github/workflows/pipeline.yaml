@@ -131,34 +131,40 @@ jobs:
     runs-on: ubuntu-latest
     needs: [generate-windows, generate-macos]
     steps:
-    # Step 1: Download both artifacts (Windows and macOS)
+    # Step 1: Check out the repository
+    - name: Check out code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0  # Fetch all history for proper tagging
+
+    # Step 2: Download both artifacts (Windows and macOS)
     - name: Download Windows Artifact
       uses: actions/download-artifact@v3
       with:
-        name: my-windows-app  # Consistent artifact name
+        name: my-windows-app
         path: ./ # Download to current directory
 
     - name: Download macOS Artifact
       uses: actions/download-artifact@v3
       with:
-        name: my-macos-app  # Consistent artifact name
+        name: my-macos-app
         path: ./ # Download to current directory
 
-    # Step 2: Generate a unique tag name
+    # Step 3: Generate a unique tag name
     - name: Generate Tag Name
       id: generate_tag
       shell: bash
       run: echo "TAG=v0.0.$GITHUB_RUN_NUMBER" >> $GITHUB_OUTPUT
 
-    # Step 3: Create and push the tag
+    # Step 4: Create and push the tag
     - name: Create and Push Tag
       run: |
         git config user.name "${{ github.actor }}"
         git config user.email "${{ github.actor }}@users.noreply.github.com"
         git tag ${{ steps.generate_tag.outputs.TAG }} -a -m "Release ${{ steps.generate_tag.outputs.TAG }}"
         git push origin ${{ steps.generate_tag.outputs.TAG }}
-  
-    # Step 4: Create GitHub Release
+
+    # Step 5: Create GitHub Release
     - name: Create GitHub Release
       id: create_release
       uses: actions/create-release@v1
@@ -174,7 +180,7 @@ jobs:
         draft: false
         prerelease: false
 
-    # Step 5: Upload the Windows zip file as a release asset
+    # Step 6: Upload the Windows zip file as a release asset
     - name: Upload Windows Release Asset
       uses: actions/upload-release-asset@v1
       env:
@@ -185,7 +191,7 @@ jobs:
         asset_name: my-windows-app.zip
         asset_content_type: application/zip
 
-    # Step 6: Upload the macOS zip file as a release asset
+    # Step 7: Upload the macOS zip file as a release asset
     - name: Upload macOS Release Asset
       uses: actions/upload-release-asset@v1
       env:
