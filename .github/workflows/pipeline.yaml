@@ -136,13 +136,13 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: my-windows-app  # Consistent artifact name
-        path: . # Download to current directory
+        path: ./ # Download to current directory
 
     - name: Download macOS Artifact
       uses: actions/download-artifact@v3
       with:
         name: my-macos-app  # Consistent artifact name
-        path: . # Download to current directory
+        path: ./ # Download to current directory
 
     # Step 2: Generate a unique tag name
     - name: Generate Tag Name
@@ -169,8 +169,8 @@ jobs:
         release_name: Release ${{ steps.generate_tag.outputs.TAG }}
         body: |
           Changes in this Release
-          - First Change
-          - Second Change
+          - Windows App
+          - macOS App
         draft: false
         prerelease: false
 
