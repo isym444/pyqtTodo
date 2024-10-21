@@ -3,11 +3,10 @@ name: Python CI Pipeline
 on:
   push:
     branches:
-      - 'master'
-      - 'release/**'
+      - '**'
   pull_request:
     branches:
-      - 'master'
+      - '**'
   
 permissions:
   contents: write
@@ -84,8 +83,6 @@ jobs:
           name: windows-artifact
           path: my-windows-artifact.zip
       
-
-
   generate-app-intel:
     runs-on: macos-13
     needs: build-and-test
@@ -124,8 +121,6 @@ jobs:
           name: macos-artifact-intel
           path: my-macos-app-intel.zip
         
-
-
   generate-app-apple-silicon:
     runs-on: macos-latest
     needs: build-and-test
