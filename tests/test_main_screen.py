@@ -31,6 +31,31 @@ class TestDashboard(unittest.TestCase):
         self.todo_app = Dashboard()
         # self.todo_app.show()
     
+
+    def test_ui_initialization(self):
+        # Check if all UI components are properly initialized
+        self.assertIsNotNone(self.todo_app.centralwidget)
+        self.assertIsNotNone(self.todo_app.date_input)
+        self.assertIsNotNone(self.todo_app.todo_input)
+        self.assertIsNotNone(self.todo_app.description_input)
+        self.assertIsNotNone(self.todo_app.add_button)
+        self.assertIsNotNone(self.todo_app.list_view)
+        self.assertIsNotNone(self.todo_app.remove_button)
+        self.assertIsNotNone(self.todo_app.logo_label)
+        self.assertIsNotNone(self.todo_app.title)
+
+    def test_load_todos(self):
+    # Insert a todo into the database
+        self.cursor.execute("INSERT INTO todos VALUES (?, ?, ?)", ("2024-01-01", "Loaded Todo", "Test Description"))
+        self.conn.commit()
+
+        # Reload the todos in the Dashboard
+        self.todo_app.load_todos()
+
+        # Verify that the todo is loaded into the list view
+        self.assertEqual(self.todo_app.list_view.count(), 1)
+        self.assertIn("2024-01-01 - Loaded Todo", self.todo_app.list_view.item(0).text())
+    
     def test_add_todo(self):
         # Access the UI elements from the instance of TodoApp
         todo_input = self.todo_app.lineEdit
@@ -80,6 +105,33 @@ class TestDashboard(unittest.TestCase):
         self.cursor.execute("SELECT * FROM todos")
         rows = self.cursor.fetchall()
         self.assertEqual(len(rows), 0)
+    
+    def test_new_line_in_description(self):
+        # Set initial text in the description input
+        self.todo_app.description_input.setPlainText("Line 1")
+        
+        # Move the cursor to the end of the text
+        cursor = self.todo_app.description_input.textCursor()
+        cursor.movePosition(cursor.MoveOperation.End)
+        self.todo_app.description_input.setTextCursor(cursor)
+
+        # Simulate pressing Shift + Enter in the description input
+        QTest.keyClick(self.todo_app.description_input, Qt.Key.Key_Return, Qt.KeyboardModifier.ShiftModifier)
+
+        # Check if a new line is added at the end
+        self.assertEqual(self.todo_app.description_input.toPlainText(), "Line 1\n")
+
+    def test_add_todo_on_enter(self):
+        # Simulate typing a todo item
+        self.todo_app.todo_input.setText("Test Todo Item")
+
+        # Manually trigger the enter-pressed handler
+        self.todo_app.handle_enter_pressed()
+
+        # Verify that the item was added to the list
+        self.assertEqual(self.todo_app.list_view.count(), 1)
+        self.assertIn("Test Todo Item", self.todo_app.list_view.item(0).text())
+
     
     def test_show_details(self):
         # Add a todo item
