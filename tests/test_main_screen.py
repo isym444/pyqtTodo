@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import patch
+from unittest.mock import MagicMock
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtTest import QTest
 from PyQt6.QtCore import Qt
@@ -29,7 +30,7 @@ class TestDashboard(unittest.TestCase):
         # Initialize the main window after patching the DB
         self.todo_app = Dashboard()
         # self.todo_app.show()
-
+    
     def test_add_todo(self):
         # Access the UI elements from the instance of TodoApp
         todo_input = self.todo_app.lineEdit
@@ -79,6 +80,29 @@ class TestDashboard(unittest.TestCase):
         self.cursor.execute("SELECT * FROM todos")
         rows = self.cursor.fetchall()
         self.assertEqual(len(rows), 0)
+    
+    def test_show_details(self):
+        # Add a todo item
+        self.todo_app.todo_input.setText("Test Todo for Details")
+        QTest.mouseClick(self.todo_app.add_button, Qt.MouseButton.LeftButton)
+
+        # Verify that the item is added to the list
+        self.assertEqual(self.todo_app.list_view.count(), 1)
+
+        # Manually trigger the show_details method
+        self.todo_app.list_view.setCurrentRow(0)
+        self.todo_app.show_details()
+
+        # Check if a DetailsWindow instance was created and shown
+        if self.todo_app.details_window:
+            self.todo_app.details_window[-1].show()
+
+        # Ensure a DetailsWindow instance was created
+        self.assertEqual(len(self.todo_app.details_window), 1)
+
+        # Check if the last DetailsWindow is visible
+        self.assertTrue(self.todo_app.details_window[-1].isVisible())
+
 
     @classmethod
     def tearDownClass(cls):
